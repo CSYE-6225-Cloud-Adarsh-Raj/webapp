@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"CSYE_6225_01/api/health"
+	"webapp/api/health"
 )
 
 func InitRouter(db *gorm.DB) *gin.Engine {
