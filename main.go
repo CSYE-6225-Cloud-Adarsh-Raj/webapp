@@ -1,11 +1,11 @@
 package main
 
 import (
-	"CSYE_6225_01/db"
-	"CSYE_6225_01/router"
-	"CSYE_6225_01/setup"
 	"log"
 	"time"
+	"webapp/db"
+	"webapp/router"
+	"webapp/setup"
 
 	"gorm.io/gorm"
 )

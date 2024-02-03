@@ -1,4 +1,4 @@
-module CSYE_6225_01
+module webapp
 
 go 1.18
 
