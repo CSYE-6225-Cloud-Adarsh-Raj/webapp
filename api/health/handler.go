@@ -20,11 +20,6 @@ func HealthCheckHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// if c.Request.Method != "GET" {
-		// 	c.Status(http.StatusMethodNotAllowed)
-		// 	return
-		// }
-
 		c.Header("Cache-Control", "no-cache")
 
 		postgresDB, err := db.DB()

@@ -7,15 +7,11 @@ import (
 	"gorm.io/gorm"
 
 	"webapp/api/health"
+	"webapp/api/user"
 )
 
 func InitRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
-
-	// httpMethods := []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"}
-	// for _, method := range httpMethods {
-	// 	r.Handle(method, "/healthz", health.HealthCheckHandler(db))
-	// }
 
 	r.Use(func(c *gin.Context) {
 		if c.Request.Method != http.MethodGet && c.Request.URL.Path == "/healthz" {
@@ -24,7 +20,11 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 
 	})
 
+	//Check DB health
 	r.GET("/healthz", health.HealthCheckHandler(db))
+
+	//Create User
+	r.POST("/v1/user", user.CreateUserHandler(db))
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{})
