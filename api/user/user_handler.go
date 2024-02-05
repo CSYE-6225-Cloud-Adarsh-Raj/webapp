@@ -130,3 +130,43 @@ func GetUserID(c *gin.Context) uuid.UUID {
 	}
 	return userID.(uuid.UUID)
 }
+
+func UpdateUserDetails(db *gorm.DB, userID uuid.UUID, firstName, lastName, password string) error {
+	var user UserModel
+	user.Password = password
+	if err := user.HashPassword(); err != nil {
+		fmt.Println("UpdateUserDetails() - Could not hash password")
+		return err
+	}
+
+	hashedPassword := user.Password
+	result := db.Model(&UserModel{}).Where("id = ?", userID).Updates(UserModel{FirstName: firstName, LastName: lastName, Password: hashedPassword})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var userDetails struct {
+			FirstName string `json:"first_name"`
+			LastName  string `json:"last_name"`
+			Password  string `json:"password"`
+		}
+		if err := c.BindJSON(&userDetails); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		userID := GetUserID(c)
+
+		// Update user details
+		if err := UpdateUserDetails(db, userID, userDetails.FirstName, userDetails.LastName, userDetails.Password); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user details"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "User details updated successfully"})
+	}
+}

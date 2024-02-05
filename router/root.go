@@ -56,6 +56,8 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	{
 		//Get User
 		authGroup.GET("/v1/user/self", user.GetUserDetails(db))
+		//Update user
+		authGroup.PUT("/v1/user/self", user.UpdateUserHandler(db))
 	}
 
 	r.NoRoute(func(c *gin.Context) {
