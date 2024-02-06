@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,9 +13,9 @@ import (
 )
 
 type UserModel struct {
-	ID        uuid.UUID `gorm:"type:uuid;primaryKey"` //Do we need to change it to string
-	CreatedAt time.Time `json:"account_created" readOnly:"true"`
-	UpdatedAt time.Time `json:"account_updated" readOnly:"true"`
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"-"`
+	CreatedAt time.Time `json:"-" readOnly:"true"`
+	UpdatedAt time.Time `json:"-" readOnly:"true"`
 	FirstName string    `json:"first_name" validate:"required"`
 	LastName  string    `json:"last_name" validate:"required"`
 	Password  string    `json:"password" validate:"required" writeOnly:"true"`
@@ -31,11 +32,6 @@ func (u *UserModel) HashPassword() error {
 	return nil
 }
 
-// // generateUUID generates a new UUID string.
-// func generateUUID() string {
-// 	return uuid.New().String()
-// }
-
 func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user UserModel
@@ -44,16 +40,21 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		user.ID = uuid.New()
+
+		if strings.Contains(user.Username, ":") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "username cannot contain ':'"})
+			return
+		}
+
 		// Check for existing email
 		var count int64
 		db.Model(&UserModel{}).Where("username = ?", user.Username).Count(&count)
 		if count > 0 {
-			c.JSON(http.StatusConflict, gin.H{"error": "email already exists"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email already exists"})
 			return
 		}
 
-		user.ID = uuid.New()
-		// user.ID = user.generateUUID()
 		user.CreatedAt = time.Now()
 		user.UpdatedAt = time.Now()
 
@@ -63,19 +64,24 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Insert user into database
 		if err := db.Create(&user).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving user to database"})
 			return
 		}
+
+		createdAtFormatted := user.CreatedAt.UTC().Format(time.RFC3339Nano)
+		createdAtFormatted = strings.Replace(createdAtFormatted, "+00:00", "Z", 1)
+
+		updatedAtformatted := user.UpdatedAt.UTC().Format(time.RFC3339Nano)
+		updatedAtformatted = strings.Replace(updatedAtformatted, "+00:00", "Z", 1)
 
 		c.JSON(http.StatusCreated, gin.H{
 			"id":              user.ID,
 			"first_name":      user.FirstName,
 			"last_name":       user.LastName,
 			"username":        user.Username,
-			"account_created": user.CreatedAt.Format(time.RFC3339Nano),
-			"account_updated": user.UpdatedAt.Format(time.RFC3339Nano),
+			"account_created": createdAtFormatted,
+			"account_updated": updatedAtformatted,
 		})
 	}
 }
@@ -86,6 +92,11 @@ func (u *UserModel) CheckPassword(password string) error {
 
 func GetUserDetails(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.ContentLength > 0 || len(c.Request.URL.Query()) > 0 {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
 		username, exists := c.Get("username")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
@@ -98,13 +109,19 @@ func GetUserDetails(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		createdAtFormatted := user.CreatedAt.UTC().Format(time.RFC3339Nano)
+		createdAtFormatted = strings.Replace(createdAtFormatted, "+00:00", "Z", 1)
+
+		updatedAtformatted := user.UpdatedAt.UTC().Format(time.RFC3339Nano)
+		updatedAtformatted = strings.Replace(updatedAtformatted, "+00:00", "Z", 1)
+
 		c.JSON(http.StatusOK, gin.H{
 			"id":              user.ID,
 			"first_name":      user.FirstName,
 			"last_name":       user.LastName,
 			"username":        user.Username,
-			"account_created": user.CreatedAt.Format(time.RFC3339Nano),
-			"account_updated": user.UpdatedAt.Format(time.RFC3339Nano),
+			"account_created": createdAtFormatted,
+			"account_updated": updatedAtformatted,
 		})
 	}
 }
@@ -140,7 +157,14 @@ func UpdateUserDetails(db *gorm.DB, userID uuid.UUID, firstName, lastName, passw
 	}
 
 	hashedPassword := user.Password
-	result := db.Model(&UserModel{}).Where("id = ?", userID).Updates(UserModel{FirstName: firstName, LastName: lastName, Password: hashedPassword})
+	// currentTime := time.Now()
+
+	result := db.Model(&UserModel{}).Where("id = ?", userID).Updates(UserModel{
+		FirstName: firstName,
+		LastName:  lastName,
+		Password:  hashedPassword,
+		// UpdatedAt:    currentTime,
+	})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -153,9 +177,15 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			FirstName string `json:"first_name"`
 			LastName  string `json:"last_name"`
 			Password  string `json:"password"`
+			Username  string `json:"username"`
 		}
 		if err := c.BindJSON(&userDetails); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		if userDetails.Username != "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Updating username/email is not allowed"})
 			return
 		}
 
@@ -167,6 +197,6 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "User details updated successfully"})
+		c.JSON(http.StatusNoContent, gin.H{"message": "User details updated successfully"})
 	}
 }
