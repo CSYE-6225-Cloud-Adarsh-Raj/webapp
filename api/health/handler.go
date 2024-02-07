@@ -20,7 +20,7 @@ func HealthCheckHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.Header("Cache-Control", "no-cache")
+		// c.Header("Cache-Control", "no-cache")
 
 		postgresDB, err := db.DB()
 		if err != nil {
