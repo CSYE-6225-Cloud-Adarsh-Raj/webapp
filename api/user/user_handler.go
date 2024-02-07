@@ -36,14 +36,16 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user UserModel
 		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error in json body": err.Error()})
+			fmt.Println("CreateUserHandler() - Error in json body")
+			c.Status(http.StatusBadRequest)
 			return
 		}
 
 		user.ID = uuid.New()
 
 		if strings.Contains(user.Username, ":") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "username cannot contain ':'"})
+			fmt.Println("CreateUserHandler() -Error: Username cannot contain ':' ")
+			c.Status(http.StatusBadRequest)
 			return
 		}
 
@@ -51,7 +53,8 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 		var count int64
 		db.Model(&UserModel{}).Where("username = ?", user.Username).Count(&count)
 		if count > 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "email already exists"})
+			fmt.Println("CreateUserHandler() - Error: Email-id already exists")
+			c.Status(http.StatusBadRequest)
 			return
 		}
 
@@ -60,12 +63,14 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 
 		// Hash the password using bcrypt
 		if err := user.HashPassword(); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
+			fmt.Println("CreateUserHandler() - Error hashing password")
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 
 		if err := db.Create(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving user to database"})
+			fmt.Println("CreateUserHandler() - Error saving user to database")
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 
@@ -99,13 +104,15 @@ func GetUserDetails(db *gorm.DB) gin.HandlerFunc {
 
 		username, exists := c.Get("username")
 		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+			fmt.Println("GetUserDetails() -Error:: User not authenticated")
+			c.Status(http.StatusUnauthorized)
 			return
 		}
 
 		var user UserModel
 		if err := db.Where("username = ?", username).First(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user details"})
+			fmt.Println("GetUserDetails() - Error: Failed to retrieve user details")
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 
@@ -142,29 +149,30 @@ func ValidateCredentials(db *gorm.DB, username, password string) bool {
 func GetUserID(c *gin.Context) uuid.UUID {
 	userID, exists := c.Get("userID")
 	if !exists {
-		fmt.Println("GetUserID() - Not able to get user ID")
+		fmt.Println("GetUserID() - Error: Not able to get user ID")
 		return uuid.Nil
 	}
 	return userID.(uuid.UUID)
 }
 
-func UpdateUserDetails(db *gorm.DB, userID uuid.UUID, firstName, lastName, password string) error {
+func updateUserDetails(db *gorm.DB, userID uuid.UUID, firstName, lastName, password string) error {
 	var user UserModel
-	user.Password = password
-	if err := user.HashPassword(); err != nil {
-		fmt.Println("UpdateUserDetails() - Could not hash password")
-		return err
+	updateFields := make(map[string]interface{})
+	if firstName != "" {
+		updateFields["FirstName"] = firstName
+	}
+	if lastName != "" {
+		updateFields["LastName"] = lastName
+	}
+	if password != "" {
+		user.Password = password
+		if err := user.HashPassword(); err != nil {
+			return err
+		}
+		updateFields["Password"] = user.Password
 	}
 
-	hashedPassword := user.Password
-	// currentTime := time.Now()
-
-	result := db.Model(&UserModel{}).Where("id = ?", userID).Updates(UserModel{
-		FirstName: firstName,
-		LastName:  lastName,
-		Password:  hashedPassword,
-		// UpdatedAt:    currentTime,
-	})
+	result := db.Model(&UserModel{}).Where("id = ?", userID).Updates(updateFields)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -173,30 +181,46 @@ func UpdateUserDetails(db *gorm.DB, userID uuid.UUID, firstName, lastName, passw
 
 func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var userDetails struct {
-			FirstName string `json:"first_name"`
-			LastName  string `json:"last_name"`
-			Password  string `json:"password"`
-			Username  string `json:"username"`
-		}
+		userDetails := make(map[string]interface{})
 		if err := c.BindJSON(&userDetails); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+			fmt.Println("UpdateUserHandler() - Error: Invalid request")
+			c.Status(http.StatusBadRequest)
 			return
 		}
 
-		if userDetails.Username != "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Updating username/email is not allowed"})
-			return
+		allowedFields := map[string]bool{
+			"first_name": true,
+			"last_name":  true,
+			"password":   true,
 		}
+
+		for key := range userDetails {
+			if !allowedFields[key] {
+				fmt.Printf("UpdateUserHandler() - Error: Field '%s' not allowed\n", key)
+				c.Status(http.StatusBadRequest)
+				return
+			}
+		}
+
+		// if userDetails.Username != "" {
+		// 	fmt.Println("UpdateUserHandler() - Error: Updating username/email is not allowed")
+		// 	c.Status(http.StatusBadRequest)
+		// 	return
+		// }
 
 		userID := GetUserID(c)
 
-		// Update user details
-		if err := UpdateUserDetails(db, userID, userDetails.FirstName, userDetails.LastName, userDetails.Password); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user details"})
+		firstName, _ := userDetails["first_name"].(string)
+		lastName, _ := userDetails["last_name"].(string)
+		password, _ := userDetails["password"].(string)
+
+		if err := updateUserDetails(db, userID, firstName, lastName, password); err != nil {
+			fmt.Println("UpdateUserHandler() - Error: Failed to update user details")
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 
-		c.JSON(http.StatusNoContent, gin.H{"message": "User details updated successfully"})
+		fmt.Println("UpdateUserHandler() - User details updated successfully")
+		c.Status(http.StatusNoContent)
 	}
 }

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,18 +15,21 @@ func AuthenticationMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username, password, ok := c.Request.BasicAuth()
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Basic authentication required"})
+			fmt.Println("AuthenticationMiddleware() - Error: Basic authentication required")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{})
 			return
 		}
 
 		if !user.ValidateCredentials(db, username, password) {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			fmt.Println("AuthenticationMiddleware() - Error: Invalid credentials")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{})
 			return
 		}
 
 		var user user.UserModel
 		if err := db.Where("username = ?", username).First(&user).Error; err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user ID details"})
+			fmt.Println("AuthenticationMiddleware() - Error: Failed to retrieve user ID details")
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 
