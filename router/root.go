@@ -54,6 +54,18 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	r.Use(func(c *gin.Context) {
 		path := c.Request.URL.Path
 		method := c.Request.Method
+		authHeader := c.GetHeader("Authorization")
+
+		nonAuthEndpoints := map[string]bool{
+			"/healthz": true,
+			"/v1/user": true,
+		}
+
+		if nonAuthEndpoints[path] && authHeader != "" {
+			fmt.Println("Error: Non-authenticated endpoint should not include Authorization header")
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		allowedMethods := map[string][]string{
 			"/healthz":      {"GET"},
