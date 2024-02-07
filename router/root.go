@@ -39,12 +39,40 @@ func AuthenticationMiddleware(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+func CacheControlMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Cache-Control", "no-cache")
+		c.Next()
+	}
+}
+
 func InitRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 
+	r.Use(CacheControlMiddleware())
+
 	r.Use(func(c *gin.Context) {
-		if c.Request.Method != http.MethodGet && c.Request.URL.Path == "/healthz" {
-			c.AbortWithStatus(http.StatusMethodNotAllowed)
+		path := c.Request.URL.Path
+		method := c.Request.Method
+
+		allowedMethods := map[string][]string{
+			"/healthz":      {"GET"},
+			"/v1/user":      {"POST"},
+			"/v1/user/self": {"GET", "PUT"},
+		}
+
+		if methods, exists := allowedMethods[path]; exists {
+			methodAllowed := false
+			for _, m := range methods {
+				if method == m {
+					methodAllowed = true
+					break
+				}
+			}
+			if !methodAllowed {
+				c.AbortWithStatus(http.StatusMethodNotAllowed)
+				return
+			}
 		}
 
 	})

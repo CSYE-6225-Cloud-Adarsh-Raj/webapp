@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -37,6 +38,13 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 		var user UserModel
 		if err := c.ShouldBindJSON(&user); err != nil {
 			fmt.Println("CreateUserHandler() - Error in json body")
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		var validate = validator.New()
+		if validationErr := validate.Struct(user); validationErr != nil {
+			fmt.Println("CreateUserHandler() - Validation Error:", validationErr.Error())
 			c.Status(http.StatusBadRequest)
 			return
 		}
