@@ -80,3 +80,67 @@ Assignment 2:
     https://gorm.io/docs/index.html
 
     https://www.postgresql.org/docs/
+
+
+On CentOS 8
+Download postgres 16
+> sudo dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+Disable old version of postgres
+> sudo dnf -qy module disable postgresql
+
+Install
+> sudo dnf -y install postgresql16-server
+
+Initialise the Database
+> sudo /usr/pgsql-16/bin/postgresql-16-setup initdb
+
+Enable the service
+> sudo systemctl enable postgresql-16
+
+Start the service
+> sudo systemctl start postgresql-16
+
+Verify Installation:
+> sudo -u postgres psql -c "SELECT version();"
+
+Setup Golang
+> curl -LO https://golang.org/dl/go1.21.6.linux-386.tar.gz
+> sudo tar -C /usr/local -xzf go1.21.6.linux-386.tar.gz
+> echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile
+> source ~/.bash_profile
+> go version
+
+Set ENV
+> echo 'export DB_HOST=localhost' >> ~/.bash_profile
+> echo 'export DB_USER=test' >> ~/.bash_profile
+> echo 'export DB_PASSWORD=test' >> ~/.bash_profile
+> echo 'export DB_NAME=test' >> ~/.bash_profile
+> source ~/.bash_profile
+
+To unzip the project
+> Install unzip tool
+> sudo dnf install unzip
+
+Unzip the project
+> unzip project.zip
+
+PSQl commands:
+> sudo -u postgres psql
+
+Inside psql cli
+> CREATE USER test WITH ENCRYPTED PASSWORD 'test';
+> CREATE DATABASE test;
+
+> GRANT ALL PRIVILEGES ON DATABASE test TO test;
+-- Grant usage on the schema
+> GRANT USAGE ON SCHEMA public TO test;
+
+-- Grant create on the schema
+> GRANT CREATE ON SCHEMA public TO test;
+
+-- Grant all privileges on all tables in the public schema
+> GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO test;
+
+-- Optionally, grant privileges on sequences
+> GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO test;
