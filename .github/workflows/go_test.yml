@@ -26,9 +26,15 @@ jobs:
         go-version: '1.21.6'
     - name: Test
       env:
-        TEST_DB_HOST: localhost
+        TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
         TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
         TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
         TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+    - name: Test Environment Variables
+      run: |
+        echo "DB Variable Set: ${TEST_DB_HOST:+true}"
+        echo "User Variable Set: ${TEST_DB_USER:+true}"
+        echo "Password Variable Set: ${TEST_DB_PASSWORD:+true}"
+        echo "Database Name Variable Set: ${TEST_DB_NAME:+true}"
       run: |
         go test ./...
