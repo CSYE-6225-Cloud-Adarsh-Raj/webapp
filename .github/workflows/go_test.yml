@@ -1,0 +1,34 @@
+name: Go Tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.21.6'
+    - name: Test
+      env:
+        TEST_DB_HOST: localhost
+        TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+        TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+        TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+      run: |
+        go test ./...
