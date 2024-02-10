@@ -24,13 +24,12 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.21.6'
-    - name: Run Go Test
+    - name: Test Environment Variables and Run Go Test
       env:
         TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
         TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
         TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
         TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
-    - name: Test Environment Variables
       run: |
         echo "DB Variable Set: ${TEST_DB_HOST:+true}"
         echo "User Variable Set: ${TEST_DB_USER:+true}"
