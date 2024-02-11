@@ -1,38 +1,43 @@
-name: Go Tests
+name: Go Test
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ "main" ]
 
 jobs:
-  test:
+  pre-check:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
-        ports:
-          - 5432:5432
-
+    outputs:
+      sha: ${{ steps.extract_sha.outputs.sha }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.21.6'
-    - name: Test Environment Variables and Run Go Test
-      env:
-        TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
-        TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
-        TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-        TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
-      run: |
-        echo "DB Variable Set: ${TEST_DB_HOST:+true}"
-        echo "User Variable Set: ${TEST_DB_USER:+true}"
-        echo "Password Variable Set: ${TEST_DB_PASSWORD:+true}"
-        echo "Database Name Variable Set: ${TEST_DB_NAME:+true}"
-        go test ./...
+      - name: Extract head SHA
+        id: extract_sha
+        run: echo "::set-output name=sha::${{ github.event.pull_request.head.sha }}"
+
+  test:
+    needs: pre-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.pre-check.outputs.sha }}
+          
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.6'
+
+      - name: Access PostgreSQL Service
+        run: |
+          docker run --name postgres -e POSTGRES_USER=${{ secrets.TEST_DB_USER }} -e POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} -e POSTGRES_DB=${{ secrets.TEST_DB_NAME }} -p 5432:5432 -d postgres:16
+          echo "Waiting for PostgreSQL to start"
+          sleep 10
+
+      - name: Run Go Test with Environment Variables
+        env:
+          TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
+          TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+          TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+        run: go test ./...
