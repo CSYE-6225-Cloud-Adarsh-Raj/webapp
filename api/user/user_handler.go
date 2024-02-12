@@ -13,15 +13,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserModel struct {
-	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"-"`
-	CreatedAt time.Time `json:"-" readOnly:"true"`
-	UpdatedAt time.Time `json:"-" readOnly:"true"`
-	FirstName string    `json:"first_name" validate:"required"`
-	LastName  string    `json:"last_name" validate:"required"`
-	Password  string    `json:"password" validate:"required" writeOnly:"true"`
-	Username  string    `json:"username" validate:"required,email"`
-}
+// type UserModel struct {
+// 	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"-"`
+// 	CreatedAt time.Time `json:"-" readOnly:"true"`
+// 	UpdatedAt time.Time `json:"-" readOnly:"true"`
+// 	FirstName string    `json:"first_name" validate:"required"`
+// 	LastName  string    `json:"last_name" validate:"required"`
+// 	Password  string    `json:"password" validate:"required" writeOnly:"true"`
+// 	Username  string    `json:"username" validate:"required,email"`
+// }
 
 // HashPassword hashes the user's password.
 func (u *UserModel) HashPassword() error {
