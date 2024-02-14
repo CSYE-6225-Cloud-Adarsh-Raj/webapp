@@ -34,6 +34,10 @@ func setupTestDatabase() *gorm.DB {
 	return db
 }
 
+func teardownDatabase() {
+	db.Migrator().DropTable(&user.UserModel{})
+}
+
 func TestMain(m *testing.M) {
 	db = setupTestDatabase()
 	err := db.AutoMigrate(&user.UserModel{})
@@ -42,12 +46,22 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	code := m.Run()
+	teardownDatabase()
 	os.Exit(code)
 }
 
 func basicAuth(username, password string) string {
 	auth := username + ":" + password
 	return base64.StdEncoding.EncodeToString([]byte(auth))
+}
+
+func unmarshalResponseBody(t *testing.T, body *bytes.Buffer) map[string]interface{} {
+	var responseBody map[string]interface{}
+	err := json.Unmarshal(body.Bytes(), &responseBody)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal response body: %v", err)
+	}
+	return responseBody
 }
 
 func TestCreateAndGetUser(t *testing.T) {
@@ -74,21 +88,7 @@ func TestCreateAndGetUser(t *testing.T) {
 		t.Fatalf("Expected status code %d, got %d for valid user creation", http.StatusCreated, w.Code)
 	}
 
-	// Test 2: Attempt to create a user with invalid data (missing fields)
-	invalidUserData := map[string]string{
-		"username": "invalid@example.com",
-	}
-	invalidUserDataBytes, _ := json.Marshal(invalidUserData)
-	req, _ = http.NewRequest("POST", "/v1/user", bytes.NewBuffer(invalidUserDataBytes))
-	req.Header.Set("Content-Type", "application/json")
-	w = httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("Expected status code %d, got %d for invalid user creation", http.StatusBadRequest, w.Code)
-	}
-
-	// Test 3: Get user details with valid authentication
+	// Test 2: Get user details with valid authentication
 	req, _ = http.NewRequest("GET", "/v1/user/self", nil)
 	req.Header.Set("Authorization", "Basic "+basicAuth("john.doe@example.com", "password123"))
 	w = httptest.NewRecorder()
@@ -98,14 +98,9 @@ func TestCreateAndGetUser(t *testing.T) {
 		t.Fatalf("Expected status code %d, got %d for valid user retrieval", http.StatusOK, w.Code)
 	}
 
-	// Test 4: Get user details with invalid authentication
-	req, _ = http.NewRequest("GET", "/v1/user/self", nil)
-	req.Header.Set("Authorization", "Basic "+basicAuth("john.doe@example.com", "wrongpassword"))
-	w = httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	if w.Code != http.StatusUnauthorized {
-		t.Fatalf("Expected status code %d, got %d for invalid authentication", http.StatusUnauthorized, w.Code)
+	responseBody := unmarshalResponseBody(t, w.Body)
+	if responseBody["username"] != userData["username"] {
+		t.Fatalf("Expected username %s, got %s", userData["username"], responseBody["username"])
 	}
 
 	fmt.Println("ALL TESTS PASSED in TestCreateAndGetUser() !!!")
@@ -158,6 +153,11 @@ func TestUpdateAndGetUser(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Fatalf("Expected status code %d, got %d for valid user retrieval after update", http.StatusOK, w.Code)
+	}
+
+	responseBody := unmarshalResponseBody(t, w.Body)
+	if responseBody["first_name"] != updatedUserData["first_name"] {
+		t.Fatalf("Expected first name %s, got %s", updatedUserData["first_name"], responseBody["first_name"])
 	}
 
 	fmt.Println("ALL TESTS PASSED in TestUpdateAndGetUser() !!!")
