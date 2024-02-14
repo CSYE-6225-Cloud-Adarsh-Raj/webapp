@@ -81,6 +81,11 @@ Assignment 2:
 
     https://www.postgresql.org/docs/
 
+Assignment 3:
+    https://developer.hashicorp.com/terraform/docs
+
+    https://cloud.google.com/docs
+
 
 On CentOS 8
 Download postgres 16
@@ -123,7 +128,7 @@ To unzip the project
 > sudo dnf install unzip
 
 Unzip the project
-> unzip project.zip
+> unzip web-app.zip
 
 PSQl commands:
 > sudo -u postgres psql
@@ -131,16 +136,9 @@ PSQl commands:
 Inside psql cli
 > CREATE USER test WITH ENCRYPTED PASSWORD 'test';
 > CREATE DATABASE test;
+> ALTER ROLE test SUPERUSER;
 
-> GRANT ALL PRIVILEGES ON DATABASE test TO test;
--- Grant usage on the schema
-> GRANT USAGE ON SCHEMA public TO test;
-
--- Grant create on the schema
-> GRANT CREATE ON SCHEMA public TO test;
-
--- Grant all privileges on all tables in the public schema
-> GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO test;
-
--- Optionally, grant privileges on sequences
-> GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO test;
+DEMO commands:
+> sudo -u postgres psql -d test
+> SELECT * from user_models;
+> sudo systemctl status postgresql-16
