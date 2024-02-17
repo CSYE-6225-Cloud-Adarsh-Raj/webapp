@@ -21,7 +21,7 @@ jobs:
 
     - name: Build Go application
       run: |
-        go build -o myapp ./...
+        go build -v -o ./webapp/myapp ./webapp
 
     - name: Upload Go binary as an artifact
       uses: actions/upload-artifact@v4
