@@ -1,9 +1,8 @@
 name: Build and Deploy Go Application
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build-and-upload:
@@ -58,4 +57,3 @@ jobs:
         BINARY_PATH: ./artifact/myapp
       run: |
         packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl
-
