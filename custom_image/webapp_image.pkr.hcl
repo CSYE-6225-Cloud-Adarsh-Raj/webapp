@@ -54,11 +54,26 @@ build {
 
   provisioner "shell" {
   inline = [
-    "echo Moving /tmp/myapp to /usr/local/bin/myapp",
-    "sudo mv /tmp/myapp /usr/local/bin/myapp",
+    "echo Moving /tmp/myapp to /usr/local/bin",
+    "sudo mv /tmp/myapp /usr/local/bin/",
     "sudo chmod +x /usr/local/bin/myapp",
     "echo Listing contents of /usr/local/bin",
     "ls -la /usr/local/bin/"
   ]
+
+  provisioner "file" {
+  source      = "./custom_image/myapp.service"
+  destination = "/tmp/myapp.service"
+  }
+
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/myapp.service /etc/systemd/system/myapp.service",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable myapp.service",
+      "sudo systemctl start myapp.service"
+    ]
+  }
+
 }
 }
