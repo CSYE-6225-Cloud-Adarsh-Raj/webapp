@@ -70,8 +70,13 @@ jobs:
         packer fmt ./custom_image/webapp_image.pkr.hcl
         packer validate ./custom_image/webapp_image.pkr.hcl
 
+
+    - name: List binary path
+      run: |
+        ls -la ./artifact/myapp
+
     - name: Run Packer to build the image
-      env:
-        BINARY_PATH: ./artifact/myapp
       run: |
         packer build -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
+      env:
+        BINARY_PATH: ./artifact/myapp
