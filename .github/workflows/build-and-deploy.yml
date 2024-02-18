@@ -25,14 +25,14 @@ jobs:
     - name: Build Go application
       run: |
         # go build -v -o ./myapp .
-        CGO_ENABLED=0 go build -v -a -installsuffix cgo -o ./myapp .
+        CGO_ENABLED=0 go build -v -a -installsuffix cgo -o ./webapp .
       working-directory: ./webapp
 
     - name: Upload Go binary as an artifact
       uses: actions/upload-artifact@v4
       with:
         name: webapp-binary
-        path: ./webapp/myapp
+        path: ./webapp/webapp
 
   packer-build:
     needs: build-and-upload
@@ -47,9 +47,8 @@ jobs:
         name: webapp-binary
         path: ./artifact
 
-    - name: Extract Artifact
+    - name: Make binary executable
       run: |
-          unzip ./artifact/webapp-binary.zip -d ./artifact
           chmod +x ./artifact/webapp
       
 
