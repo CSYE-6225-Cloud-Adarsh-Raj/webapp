@@ -63,6 +63,13 @@ jobs:
         sudo rm -f /usr/local/bin/packer
         sudo mv /tmp/packer /usr/local/bin
 
+    - name: Prepare and Validate Packer Configuration
+      run: |
+        # cd custom_image
+        packer init ./custom_image/webapp_image.pkr.hcl
+        packer fmt ./custom_image/webapp_image.pkr.hcl
+        packer validate ./custom_image/webapp_image.pkr.hcl
+
     - name: Run Packer to build the image
       env:
         BINARY_PATH: ./artifact/myapp
