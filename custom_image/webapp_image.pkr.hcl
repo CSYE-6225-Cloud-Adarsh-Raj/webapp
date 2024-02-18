@@ -37,15 +37,15 @@ build {
   sources = ["source.googlecompute.centos_stream"]
 
   #provisioner "shell" {
-  #script = "update_system.sh"
+  #script = "./custom_image/update_system.sh"
   #}
 
   provisioner "shell" {
-    script = "install_postgresql.sh"
+    script = "./custom_image/install_postgresql.sh"
   }
 
   provisioner "shell" {
-    script = "install_golang.sh"
+    script = "./custom_image/install_golang.sh"
   }
   provisioner "file" {
     source = "${var.binary_path}"
@@ -59,5 +59,3 @@ build {
     ]
   }
 }
-
-
