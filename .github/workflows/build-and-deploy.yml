@@ -45,7 +45,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: webapp-binary
-        path: ./artifact/myapp
+        path: ./artifact
+
+    - name: Extract Artifact
+      run: |
+          unzip ./artifact/webapp-binary.zip -d ./artifact
+          chmod +x ./artifact/webapp
+      
 
     - name: Authenticate to GCP
       uses: google-github-actions/auth@v2
@@ -67,7 +73,7 @@ jobs:
 
     - name: List binary path
       run: |
-        ls -la ./artifact/myapp
+        ls -la ./artifact/webapp
 
     - name: Prepare and Validate Packer Configuration
       run: |
@@ -76,10 +82,10 @@ jobs:
         packer fmt ./custom_image/webapp_image.pkr.hcl
         packer validate -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
       env:
-        BINARY_PATH: ./artifact/myapp
+        BINARY_PATH: ./artifact/webapp
 
     - name: Run Packer to build the image
       run: |
         packer build -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
       env:
-        BINARY_PATH: ./artifact/myapp
+        BINARY_PATH: ./artifact/webapp

@@ -52,14 +52,14 @@ build {
 
   provisioner "file" {
     source      = var.binary_path
-    destination = "/tmp/myapp"
+    destination = "/tmp/webapp"
   }
 
   provisioner "shell" {
     inline = [
-      "echo Moving /tmp/myapp to /usr/local/bin",
-      "sudo mv /tmp/myapp /usr/local/bin/",
-      "sudo chmod +x /usr/local/bin/myapp",
+      "echo Moving /tmp/webapp to /usr/local/bin",
+      "sudo mv /tmp/webapp /usr/local/bin/webapp",
+      "sudo chmod +x /usr/local/bin/webapp",
       "echo Listing contents of /usr/local/bin",
       "ls -la /usr/local/bin/"
     ]
@@ -67,15 +67,15 @@ build {
 
   provisioner "file" {
     source      = "./custom_image/myapp.service"
-    destination = "/tmp/myapp.service"
+    destination = "/tmp/webapp.service"
   }
 
   provisioner "shell" {
     inline = [
-      "sudo mv /tmp/myapp.service /etc/systemd/system/myapp.service",
+      "sudo mv /tmp/webapp.service /etc/systemd/system/webapp.service",
       "sudo systemctl daemon-reload",
-      "sudo systemctl enable myapp.service",
-      "sudo systemctl start myapp.service"
+      "sudo systemctl enable webapp.service",
+      "sudo systemctl start webapp.service"
     ]
   }
 }
