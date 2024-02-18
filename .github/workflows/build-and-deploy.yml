@@ -67,4 +67,4 @@ jobs:
       env:
         BINARY_PATH: ./artifact/myapp
       run: |
-        packer build -var "binary_path=${BINARY_PATH}" webapp/packer/webapp_image.pkr.hcl
+        packer build -var "binary_path=${BINARY_PATH}" webapp/custom_image/webapp_image.pkr.hcl
