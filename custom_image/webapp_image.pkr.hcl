@@ -34,10 +34,12 @@ source "googlecompute" "centos_stream" {
 }
 
 build {
-  sources = ["source.googlecompute.centos_stream"]
+  sources = [
+    "source.googlecompute.centos_stream"
+  ]
 
   #provisioner "shell" {
-  #script = "./custom_image/update_system.sh"
+    #script = "./custom_image/update_system.sh"
   #}
 
   provisioner "shell" {
@@ -47,23 +49,25 @@ build {
   provisioner "shell" {
     script = "./custom_image/install_golang.sh"
   }
+
   provisioner "file" {
-    source = "${var.binary_path}"
+    source      = var.binary_path
     destination = "/tmp/myapp"
   }
 
   provisioner "shell" {
-  inline = [
-    "echo Moving /tmp/myapp to /usr/local/bin",
-    "sudo mv /tmp/myapp /usr/local/bin/",
-    "sudo chmod +x /usr/local/bin/myapp",
-    "echo Listing contents of /usr/local/bin",
-    "ls -la /usr/local/bin/"
-  ]
+    inline = [
+      "echo Moving /tmp/myapp to /usr/local/bin",
+      "sudo mv /tmp/myapp /usr/local/bin/",
+      "sudo chmod +x /usr/local/bin/myapp",
+      "echo Listing contents of /usr/local/bin",
+      "ls -la /usr/local/bin/"
+    ]
+  }
 
   provisioner "file" {
-  source      = "./custom_image/myapp.service"
-  destination = "/tmp/myapp.service"
+    source      = "./custom_image/myapp.service"
+    destination = "/tmp/myapp.service"
   }
 
   provisioner "shell" {
@@ -74,6 +78,4 @@ build {
       "sudo systemctl start myapp.service"
     ]
   }
-
-}
 }
