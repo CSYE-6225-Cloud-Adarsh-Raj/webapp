@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -16,6 +17,7 @@ func GetDBConfig() DBConfig {
 	dbName := os.Getenv("DB_NAME")
 
 	dsn := "host=" + dbHost + " user=" + dbUser + " dbname=" + dbName + " sslmode=disable password=" + dbPassword
+	fmt.Println("DSN:", dsn)
 
 	return DBConfig{DSN: dsn}
 }
