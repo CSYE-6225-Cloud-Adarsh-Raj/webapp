@@ -53,9 +53,12 @@ build {
   }
 
   provisioner "shell" {
-    inline = [
-      "sudo mv /tmp/myapp /usr/local/bin/",
-      "sudo chmod +x /usr/local/bin/myapp",
-    ]
-  }
+  inline = [
+    "echo Moving /tmp/myapp to /usr/local/bin/myapp",
+    "sudo mv /tmp/myapp /usr/local/bin/myapp",
+    "sudo chmod +x /usr/local/bin/myapp",
+    "echo Listing contents of /usr/local/bin",
+    "ls -la /usr/local/bin/"
+  ]
+}
 }

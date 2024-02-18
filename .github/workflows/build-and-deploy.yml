@@ -23,13 +23,15 @@ jobs:
       working-directory: ./webapp
 
     - name: Build Go application
-      run: go build -v -o ./myapp .
+      run: |
+        # go build -v -o ./myapp .
+        CGO_ENABLED=0 go build -v -a -installsuffix cgo -o ./myapp .
       working-directory: ./webapp
 
     - name: Upload Go binary as an artifact
       uses: actions/upload-artifact@v4
       with:
-        name: go-binary
+        name: webapp-binary
         path: ./webapp/myapp
 
   packer-build:
@@ -42,7 +44,7 @@ jobs:
     - name: Download Go binary artifact
       uses: actions/download-artifact@v4
       with:
-        name: go-binary
+        name: webapp-binary
         path: ./artifact/myapp
 
     - name: Authenticate to GCP
@@ -62,7 +64,7 @@ jobs:
         unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
         sudo rm -f /usr/local/bin/packer
         sudo mv /tmp/packer /usr/local/bin
-        
+
     - name: List binary path
       run: |
         ls -la ./artifact/myapp
