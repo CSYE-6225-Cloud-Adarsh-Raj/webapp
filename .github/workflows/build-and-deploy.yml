@@ -62,18 +62,19 @@ jobs:
         unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
         sudo rm -f /usr/local/bin/packer
         sudo mv /tmp/packer /usr/local/bin
+        
+    - name: List binary path
+      run: |
+        ls -la ./artifact/myapp
 
     - name: Prepare and Validate Packer Configuration
       run: |
         # cd custom_image
         packer init ./custom_image/webapp_image.pkr.hcl
         packer fmt ./custom_image/webapp_image.pkr.hcl
-        packer validate ./custom_image/webapp_image.pkr.hcl
-
-
-    - name: List binary path
-      run: |
-        ls -la ./artifact/myapp
+        packer validate -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
+      env:
+        BINARY_PATH: ./artifact/myapp
 
     - name: Run Packer to build the image
       run: |
