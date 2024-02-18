@@ -10,11 +10,10 @@ ExecStart=/usr/local/bin/webapp
 # Optionally, set environment variables
 Environment=DB_USER=test
 Environment=DB_HOST=localhost
-Environment=DB_PASS=test
+Environment=DB_PASSWORD=test
 Environment=DB_NAME=test
 
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
-
