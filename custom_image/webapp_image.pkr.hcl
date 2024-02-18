@@ -66,7 +66,7 @@ build {
   }
 
   provisioner "file" {
-    source      = "./custom_image/myapp.service"
+    source      = "./custom_image/webapp.service"
     destination = "/tmp/webapp.service"
   }
 
