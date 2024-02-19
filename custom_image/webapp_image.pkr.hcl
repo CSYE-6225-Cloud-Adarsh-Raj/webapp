@@ -23,7 +23,7 @@ variable "binary_path" {
 }
 
 locals {
-  timestamp = "${regex_replace(timestamp(), "[-:T]", "-")}"
+  timestamp = "${lower(regex_replace(timestamp(), "[-:TZ]", "-"))}"
 }
 
 
