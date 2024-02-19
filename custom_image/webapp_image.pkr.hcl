@@ -89,4 +89,28 @@ build {
       "sudo systemctl start webapp.service"
     ]
   }
+
+  provisioner "file" {
+    source      = "./custom_image/restart_webapp.sh"
+    destination = "/tmp/restart_webapp.sh"
+  }
+
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/restart_webapp.sh /usr/local/bin/restart_webapp.sh",
+      "sudo chmod +x /usr/local/bin/restart_webapp.sh"
+    ]
+  }
+
+  provisioner "file" {
+    source      = "./custom_image/restart_webapp.service"
+    destination = "/tmp/restart_webapp.service"
+  }
+
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/restart_webapp.service /etc/systemd/system/restart_webapp.service",
+      "sudo systemctl enable restart_webapp.service",
+    ]
+  }
 }

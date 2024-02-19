@@ -1,0 +1,12 @@
+[Unit]
+Description=Restart Webapp Service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/restart_webapp.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+
