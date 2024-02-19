@@ -18,7 +18,7 @@ variable "zone" {
 }
 
 variable "binary_path" {
-  type    = string
+  type        = string
   description = "The path to the Go binary"
 }
 
@@ -39,7 +39,7 @@ build {
   ]
 
   #provisioner "shell" {
-    #script = "./custom_image/update_system.sh"
+  #script = "./custom_image/update_system.sh"
   #}
 
   provisioner "shell" {
@@ -70,7 +70,7 @@ build {
       "sudo chmod +x /usr/local/bin/webapp",
       "echo Setting SELinux context for /usr/local/bin/webapp",
       "sudo semanage fcontext -a -t bin_t '/usr/local/bin/webapp'",
-      "sudo restorecon -v '/usr/local/bin/webapp'"
+      "sudo restorecon -v '/usr/local/bin/webapp'",
       "echo Listing contents of /usr/local/bin",
       "ls -la /usr/local/bin/"
     ]
