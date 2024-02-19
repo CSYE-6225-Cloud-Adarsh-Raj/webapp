@@ -22,6 +22,11 @@ variable "binary_path" {
   description = "The path to the Go binary"
 }
 
+locals {
+  timestamp = regex_replace(timestamp(), "[-:T]", "_")
+}
+
+
 source "googlecompute" "centos_stream" {
   project_id              = var.project_id
   zone                    = var.zone
@@ -29,7 +34,7 @@ source "googlecompute" "centos_stream" {
   source_image_project_id = ["centos-cloud"]
   machine_type            = "e2-medium"
   ssh_username            = "packer"
-  image_name              = "centos-stream-postgres16-golang-image"
+  image_name              = "webapp_golden_image_${local.timestamp}"
   image_family            = "centos-stream-custom"
 }
 
@@ -37,6 +42,16 @@ build {
   sources = [
     "source.googlecompute.centos_stream"
   ]
+
+  provisioner "shell" {
+    inline = [
+      "echo Creating group csye6225",
+      "sudo groupadd csye6225",
+      "echo Creating user csye6225 with no login shell",
+      "sudo useradd -r -g csye6225 -s /usr/sbin/nologin csye6225",
+      "echo User and group csye6225 created successfully"
+    ]
+  }
 
   #provisioner "shell" {
   #script = "./custom_image/update_system.sh"
@@ -68,6 +83,7 @@ build {
       "echo Moving /tmp/webapp to /usr/local/bin",
       "sudo mv /tmp/webapp /usr/local/bin/webapp",
       "sudo chmod +x /usr/local/bin/webapp",
+      "sudo chown csye6225:csye6225 /usr/local/bin/webapp",
       "echo Setting SELinux context for /usr/local/bin/webapp",
       "sudo semanage fcontext -a -t bin_t '/usr/local/bin/webapp'",
       "sudo restorecon -v '/usr/local/bin/webapp'",
@@ -84,6 +100,7 @@ build {
   provisioner "shell" {
     inline = [
       "sudo mv /tmp/webapp.service /etc/systemd/system/webapp.service",
+      "sudo chown csye6225:csye6225 /etc/systemd/system/webapp.service",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable webapp.service",
       "sudo systemctl start webapp.service"
@@ -99,6 +116,7 @@ build {
     inline = [
       "sudo mv /tmp/restart_webapp.sh /usr/local/bin/restart_webapp.sh",
       "sudo chmod +x /usr/local/bin/restart_webapp.sh",
+      "sudo chown csye6225:csye6225 /usr/local/bin/restart_webapp.sh",
       "sudo semanage fcontext -a -t bin_t '/usr/local/bin/restart_webapp.sh'",
       "sudo restorecon -v '/usr/local/bin/restart_webapp.sh'"
     ]
@@ -112,7 +130,16 @@ build {
   provisioner "shell" {
     inline = [
       "sudo mv /tmp/restart_webapp.service /etc/systemd/system/restart_webapp.service",
+      "sudo chown csye6225:csye6225 /etc/systemd/system/restart_webapp.service",
       "sudo systemctl enable restart_webapp.service"
+    ]
+  }
+  
+  provisioner "shell" {
+    inline = [
+      "echo Removing the 'packer' user",
+      "sudo userdel -r packer",
+      "echo 'packer' user removed successfully"
     ]
   }
 }
