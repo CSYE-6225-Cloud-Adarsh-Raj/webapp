@@ -9,17 +9,34 @@ packer {
 
 variable "project_id" {
   type    = string
+  #description = "The Projetc ID"
   default = "csye6225-dev-414220"
 }
 
 variable "zone" {
   type    = string
+  #description = "The zone in the GCP"
   default = "us-central1-b"
 }
 
 variable "binary_path" {
   type        = string
   description = "The path to the Go binary"
+}
+
+variable "db_user" {
+  type        = string
+  description = "Database User"
+}
+
+variable "db_password" {
+  type        = string
+  description = "Database Password"
+}
+
+variable "db_name" {
+  type        = string
+  description = "Database Name"
 }
 
 locals {
@@ -59,6 +76,11 @@ build {
 
   provisioner "shell" {
     script = "./custom_image/install_postgresql.sh"
+    environment_vars = [
+      "TEST_DB_USER=${var.db_user}",
+      "TEST_DB_PASSWORD=${var.db_password}",
+      "TEST_DB_NAME=${var.db_name}"
+    ]
   }
 
   provisioner "shell" {
