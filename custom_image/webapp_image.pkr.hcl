@@ -23,7 +23,7 @@ variable "binary_path" {
 }
 
 locals {
-  timestamp = regex_replace(timestamp(), "[-:T]", "_")
+  timestamp = "${regex_replace(timestamp(), "[-:T]", "-")}"
 }
 
 
@@ -34,7 +34,7 @@ source "googlecompute" "centos_stream" {
   source_image_project_id = ["centos-cloud"]
   machine_type            = "e2-medium"
   ssh_username            = "packer"
-  image_name              = "webapp_golden_image_${local.timestamp}"
+  image_name              = "webapp-golden-${local.timestamp}-image"
   image_family            = "centos-stream-custom"
 }
 
