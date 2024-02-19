@@ -134,14 +134,4 @@ build {
       "sudo systemctl enable restart_webapp.service"
     ]
   }
-  
-  provisioner "shell" {
-    inline = [
-      "sudo pkill -u packer || true",
-      "sleep 15",
-      "echo Removing the 'packer' user",
-      "sudo userdel -r packer",
-      "echo 'packer' user removed successfully"
-    ]
-  }
 }
