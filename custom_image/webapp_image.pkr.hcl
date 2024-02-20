@@ -140,7 +140,7 @@ build {
     script = "./custom_image/replace_envs.sh"
     environment_vars = [
       "DB_USER=${var.db_user}",
-      "DB_HOST=${var.db_host}",
+      "DB_HOST=localhost",
       "DB_PASSWORD=${var.db_password}",
       "DB_NAME=${var.db_name}"
     ]
