@@ -20,7 +20,9 @@ jobs:
         curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
         unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
         sudo mv /tmp/packer /usr/local/bin
-
+    -name: Packer init
+      run: |
+        packer init ./custom_image/webapp_image.pkr.hcl
     - name: Run packer fmt
       run: |
         packer fmt -check -diff ./custom_image/webapp_image.pkr.hcl
