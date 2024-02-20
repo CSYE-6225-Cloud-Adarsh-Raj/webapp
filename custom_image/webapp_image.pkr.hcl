@@ -21,7 +21,6 @@ variable "zone" {
 
 variable "binary_path" {
   type        = string
-  default     = "webapp"
   description = "The path to the Go binary"
 }
 
