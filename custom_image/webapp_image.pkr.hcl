@@ -45,7 +45,6 @@ locals {
 }
 
 
-
 source "googlecompute" "centos_stream" {
   project_id              = var.project_id
   zone                    = var.zone
