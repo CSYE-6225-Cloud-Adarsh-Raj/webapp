@@ -1,7 +1,7 @@
 #!/bin/bash
-DB_USER=${TEST_DB_USER}
-DB_PASSWORD=${TEST_DB_PASSWORD}
-DB_NAME=${TEST_DB_NAME}
+DB_USER=${DB_USER}
+DB_PASSWORD=${DB_PASSWORD}
+DB_NAME=${DB_NAME}
 
 sudo dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 sudo dnf -qy module disable postgresql

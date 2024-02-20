@@ -82,9 +82,9 @@ jobs:
         # packer validate -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
         packer validate \
             -var "binary_path=${BINARY_PATH}" \
-            -var "db_user=${{ secrets.TEST_DB_USER }}" \
-            -var "db_password=${{ secrets.TEST_DB_PASSWORD }}" \
-            -var "db_name=${{ secrets.TEST_DB_NAME }}" \
+            -var "db_user=${{ secrets.DB_USER }}" \
+            -var "db_password=${{ secrets.DB_PASSWORD }}" \
+            -var "db_name=${{ secrets.DB_NAME }}" \
             ./custom_image/webapp_image.pkr.hcl
       env:
         BINARY_PATH: ./artifact/webapp
@@ -94,9 +94,9 @@ jobs:
         # packer build -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
         packer build \
             -var "binary_path=${BINARY_PATH}" \
-            -var "db_user=${{ secrets.TEST_DB_USER }}" \
-            -var "db_password=${{ secrets.TEST_DB_PASSWORD }}" \
-            -var "db_name=${{ secrets.TEST_DB_NAME }}" \
+            -var "db_user=${{ secrets.DB_USER }}" \
+            -var "db_password=${{ secrets.DB_PASSWORD }}" \
+            -var "db_name=${{ secrets.DB_NAME }}" \
             ./custom_image/webapp_image.pkr.hcl
       env:
         BINARY_PATH: ./artifact/webapp
