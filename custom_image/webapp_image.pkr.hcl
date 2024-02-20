@@ -127,16 +127,14 @@ build {
     ]
   }
 
-  # Add the provisioner for replacing environment variables here
   provisioner "shell" {
     script = "./custom_image/replace_envs.sh"
     environment_vars = [
-      "DB_USER=${var.db_user}",
+      "DB_USER=testuser",
       "DB_HOST=localhost",
-      "DB_PASSWORD=${var.db_password}",
-      "DB_NAME=${var.db_name}"
+      "DB_PASSWORD=testpass",
+      "DB_NAME=testdb"
     ]
-    execute_command = "sudo bash {{.Path}}"
   }
 
   provisioner "shell" {
