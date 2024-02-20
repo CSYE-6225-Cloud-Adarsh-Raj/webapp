@@ -3,6 +3,182 @@ name: Build and Deploy Go Application
 on:
   pull_request:
     branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+    
+
+jobs:
+  packer-format-and-validate:
+    if: github.event_name == 'pull_request' && github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Packer
+      run: |
+        curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
+        unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
+        sudo mv /tmp/packer /usr/local/bin
+
+    - name: Run packer fmt
+      run: |
+        packer fmt -check -diff ./custom_image/webapp_image.pkr.hcl
+      id: fmt
+      continue-on-error: true
+
+    - name: Fail if packer fmt made changes
+      if: steps.fmt.outcome == 'failure'
+      run: exit 1
+
+    - name: Run packer validate
+      run: |
+        packer validate \
+          -var "binary_path=dummy" \
+          -var "db_user=dummy" \
+          -var "db_password=dummy" \
+          -var "db_name=dummy" \
+          ./custom_image/webapp_image.pkr.hcl
+
+  build-and-upload:
+    needs: packer-format-and-validate
+    if: (github.event_name == 'pull_request' || github.event_name == 'push') && github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        path: webapp
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21.6'
+
+    - name: Build dependencies
+      run: go mod tidy
+      working-directory: ./webapp
+
+    - name: Build Go application
+      run: |
+        # go build -v -o ./myapp .
+        CGO_ENABLED=0 go build -v -a -installsuffix cgo -o ./webapp .
+      working-directory: ./webapp
+
+    - name: Upload Go binary as an artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: webapp-binary
+        path: ./webapp/webapp
+
+  integration-test-and-build-image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-and-upload
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code again
+      uses: actions/checkout@v4
+
+    - name: Download Go binary artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: webapp-binary
+        path: ./artifact
+
+    - name: Make binary executable
+      run: |
+          chmod +x ./artifact/webapp
+      
+    //Put auth
+    - name: Authenticate to GCP
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Use gcloud CLI
+      run: gcloud info
+
+    - name: Install Packer
+      run: |
+        curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
+        unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
+        sudo rm -f /usr/local/bin/packer
+        sudo mv /tmp/packer /usr/local/bin
+
+    - name: List binary path
+      run: |
+        ls -la ./artifact/webapp
+
+    # - name: Prepare and Validate Packer Configuration
+    #   run: |
+    #     # cd custom_image
+    #     packer init ./custom_image/webapp_image.pkr.hcl
+    #     packer fmt ./custom_image/webapp_image.pkr.hcl
+    #     # packer validate -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
+    #     packer validate \
+    #         -var "binary_path=${BINARY_PATH}" \
+    #         -var "db_user=${{ secrets.DB_USER }}" \
+    #         -var "db_password=${{ secrets.DB_PASSWORD }}" \
+    #         -var "db_name=${{ secrets.DB_NAME }}" \
+    #         ./custom_image/webapp_image.pkr.hcl
+    #   env:
+    #     BINARY_PATH: ./artifact/webapp
+
+    - name: Run Packer to build the image
+      run: |
+        # packer build -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
+        packer build \
+            -var "binary_path=${BINARY_PATH}" \
+            -var "db_user=${{ secrets.DB_USER }}" \
+            -var "db_password=${{ secrets.DB_PASSWORD }}" \
+            -var "db_name=${{ secrets.DB_NAME }}" \
+            ./custom_image/webapp_image.pkr.hcl
+      env:
+        BINARY_PATH: ./artifact/webapp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////
+name: Build and Deploy Go Application
+
+on:
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build-and-upload:
