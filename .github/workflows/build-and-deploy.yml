@@ -36,22 +36,27 @@ jobs:
         curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
         unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
         sudo mv /tmp/packer /usr/local/bin
-        
+
     - name: List contents of the custom_image directory
-      run: ls -la ./custom_image/
+      run: ls -la
+      working-directory: ./custom_image/
 
     - name: Packer init
       run: |
-        packer init ./custom_image/webapp_image.pkr.hcl
+        packer init webapp_image.pkr.hcl
+      working-directory: ./custom_image/
+
     - name: Run packer fmt
       run: |
-        packer fmt -check -diff ./custom_image/webapp_image.pkr.hcl
+        packer fmt -check -diff webapp_image.pkr.hcl
       id: fmt
       continue-on-error: true
+      working-directory: ./custom_image/
 
     - name: Fail if packer fmt made changes
       if: steps.fmt.outcome == 'failure'
       run: exit 1
+      working-directory: ./custom_image/
 
     - name: Run packer validate
       run: |
@@ -60,7 +65,8 @@ jobs:
           -var "db_user=${{ secrets.DB_USER }}" \
           -var "db_password=${{ secrets.DB_PASSWORD }}" \
           -var "db_name=${{ secrets.DB_NAME }}" \
-          ./custom_image/webapp_image.pkr.hcl
+          webapp_image.pkr.hcl
+      working-directory: ./custom_image/
 
   build-and-upload:
     needs: packer-format-and-validate
