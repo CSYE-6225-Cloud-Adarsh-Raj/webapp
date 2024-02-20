@@ -36,7 +36,6 @@ jobs:
     - name: Run packer validate
       run: |
         packer validate \
-          -var "binary_path=dummy" \
           -var "db_user=dummy" \
           -var "db_password=dummy" \
           -var "db_name=dummy" \

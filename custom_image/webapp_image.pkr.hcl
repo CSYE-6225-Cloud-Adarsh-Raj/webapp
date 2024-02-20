@@ -21,6 +21,7 @@ variable "zone" {
 
 variable "binary_path" {
   type        = string
+  default     = "webapp"
   description = "The path to the Go binary"
 }
 
@@ -42,6 +43,7 @@ variable "db_name" {
 locals {
   timestamp = "${lower(regex_replace(timestamp(), "[-:TZ]", "-"))}"
 }
+
 
 
 source "googlecompute" "centos_stream" {
