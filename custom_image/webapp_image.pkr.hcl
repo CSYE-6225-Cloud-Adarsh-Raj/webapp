@@ -128,14 +128,23 @@ build {
   }
 
   provisioner "shell" {
-    script = "./custom_image/replace_envs.sh"
-    environment_vars = [
-      "DB_USER=testuser",
-      "DB_HOST=localhost",
-      "DB_PASSWORD=testpass",
-      "DB_NAME=testdb"
+    inline = [
+      "echo DB_USER=${var.db_user}",
+      "echo DB_PASSWORD=${var.db_password}",
+      "echo DB_NAME=${var.db_name}",
+      "echo DB_HOST=localhost"
     ]
   }
+
+  provisioner "shell" {
+    script = "./custom_image/replace_envs.sh"
+    environment_vars = [
+      "DB_USER=${var.db_user}",
+      "DB_HOST=${var.db_host}",
+      "DB_PASSWORD=${var.db_password}",
+      "DB_NAME=${var.db_name}"
+    ]
+  } 
 
   provisioner "shell" {
     inline = [
