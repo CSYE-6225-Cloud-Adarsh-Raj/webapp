@@ -8,10 +8,10 @@ User=packer
 ExecStart=/usr/local/bin/webapp
 
 # Optionally, set environment variables
-Environment=DB_USER=test
-Environment=DB_HOST=localhost
-Environment=DB_PASSWORD=test
-Environment=DB_NAME=test
+Environment=DB_USER=${DB_USER}
+Environment=DB_HOST=${DB_HOST}
+Environment=DB_PASSWORD=${DB_PASSWORD}
+Environment=DB_NAME=${DB_NAME}
 
 Restart=on-failure
 

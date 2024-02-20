@@ -124,6 +124,22 @@ build {
       "sudo mv /tmp/webapp.service /etc/systemd/system/webapp.service",
       "sudo chown csye6225:csye6225 /etc/systemd/system/webapp.service",
       "sudo systemctl daemon-reload",
+    ]
+  }
+
+  # Add the provisioner for replacing environment variables here
+  provisioner "shell" {
+    script = "replace_envs.sh"
+    environment_vars = [
+      "DB_USER=${var.db_user}",
+      "DB_HOST=localhost",
+      "DB_PASSWORD=${var.db_password}",
+      "DB_NAME=${var.db_name}"
+    ]
+  }
+
+  provisioner "shell" {
+    inline = [
       "sudo systemctl enable webapp.service",
       "sudo systemctl start webapp.service"
     ]
