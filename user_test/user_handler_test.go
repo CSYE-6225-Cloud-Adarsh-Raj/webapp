@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	code := m.Run()
-	teardownDatabase()
+	// teardownDatabase()
 	os.Exit(code)
 }
 
