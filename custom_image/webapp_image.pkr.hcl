@@ -8,13 +8,13 @@ packer {
 }
 
 variable "project_id" {
-  type    = string
+  type = string
   #description = "The Projetc ID"
   default = "csye6225-dev-414220"
 }
 
 variable "zone" {
-  type    = string
+  type = string
   #description = "The zone in the GCP"
   default = "us-central1-b"
 }
@@ -135,7 +135,7 @@ build {
       "DB_PASSWORD=${var.db_password}",
       "DB_NAME=${var.db_name}"
     ]
-  } 
+  }
 
   provisioner "shell" {
     inline = [
