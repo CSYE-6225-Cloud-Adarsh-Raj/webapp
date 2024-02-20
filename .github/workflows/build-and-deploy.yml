@@ -14,6 +14,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        path: webapp
       
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -34,8 +36,10 @@ jobs:
         curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
         unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
         sudo mv /tmp/packer /usr/local/bin
+        
     - name: List contents of the custom_image directory
       run: ls -la ./custom_image/
+
     - name: Packer init
       run: |
         packer init ./custom_image/webapp_image.pkr.hcl
