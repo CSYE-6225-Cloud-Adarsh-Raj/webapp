@@ -10,20 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
-    
-    steps:
-    - name: Check if push is from a PR merge
-      id: check-pr-merge
-      run: |
-        if [[ ${{ github.event_name }} == 'push' && ${{ github.event.commits[0].message }} == *'Merge pull request'* ]]; then
-          echo "PR_MERGE=true" >> $GITHUB_ENV
-        else
-          echo "PR_MERGE=false" >> $GITHUB_ENV
-        fi
-
-    - name: Exit if not a PR merge
-      if: env.PR_MERGE == 'false'
-      run: exit 0
     services:
       postgres:
         image: postgres:16
