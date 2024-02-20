@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
 
     services:
       postgres:
