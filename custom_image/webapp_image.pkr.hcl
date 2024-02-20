@@ -136,6 +136,7 @@ build {
       "DB_PASSWORD=${var.db_password}",
       "DB_NAME=${var.db_name}"
     ]
+    execute_command = "sudo bash {{.Path}}"
   }
 
   provisioner "shell" {
