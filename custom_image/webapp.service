@@ -1,0 +1,19 @@
+[Unit]
+Description=Webapp Service
+After=network.target
+
+[Service]
+Type=simple
+User=packer
+ExecStart=/usr/local/bin/webapp
+
+# Optionally, set environment variables
+Environment=DB_USER=${DB_USER}
+Environment=DB_HOST=${DB_HOST}
+Environment=DB_PASSWORD=${DB_PASSWORD}
+Environment=DB_NAME=${DB_NAME}
+
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
