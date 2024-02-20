@@ -16,6 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//Initialise db global variable
 var db *gorm.DB
 
 func setupTestDatabase() *gorm.DB {
