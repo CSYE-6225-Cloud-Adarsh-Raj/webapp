@@ -89,7 +89,7 @@ jobs:
       run: |
           chmod +x ./artifact/webapp
       
-    //Put auth
+    #Put auth
     - name: Authenticate to GCP
       uses: google-github-actions/auth@v2
       with:
