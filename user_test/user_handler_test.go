@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+// var db *gorm.DB
 
 func setupTestDatabase() *gorm.DB {
 	host := os.Getenv("TEST_DB_HOST")
