@@ -2,25 +2,12 @@
 
 TMP_SERVICE_FILE="/tmp/webapp.service"
 
-
-echo "DB_USER is '$DB_USER'"
-echo "DB_HOST is '$DB_HOST'"
-echo "DB_PASSWORD is '$DB_PASSWORD'"
-echo "DB_NAME is '$DB_NAME'"
-
-# Make a copy to /tmp where we have write access
 sudo cp /etc/systemd/system/webapp.service "$TMP_SERVICE_FILE"
-
-echo "Before replacement:"
-cat "$TMP_SERVICE_FILE"
 
 # Replace placeholders with actual values in the temporary file
 sudo sed -i "s|\${DB_USER}|${DB_USER}|g" "$TMP_SERVICE_FILE"
 sudo sed -i "s|\${DB_HOST}|${DB_HOST}|g" "$TMP_SERVICE_FILE"
 sudo sed -i "s|\${DB_PASSWORD}|${DB_PASSWORD}|g" "$TMP_SERVICE_FILE"
 sudo sed -i "s|\${DB_NAME}|${DB_NAME}|g" "$TMP_SERVICE_FILE"
-
-echo "After replacement:"
-cat "$TMP_SERVICE_FILE"
 
 sudo mv "$TMP_SERVICE_FILE" /etc/systemd/system/webapp.service

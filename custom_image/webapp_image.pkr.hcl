@@ -128,15 +128,6 @@ build {
   }
 
   provisioner "shell" {
-    inline = [
-      "echo DB_USER=${var.db_user}",
-      "echo DB_PASSWORD=${var.db_password}",
-      "echo DB_NAME=${var.db_name}",
-      "echo DB_HOST=localhost"
-    ]
-  }
-
-  provisioner "shell" {
     script = "./custom_image/replace_envs.sh"
     environment_vars = [
       "DB_USER=${var.db_user}",
