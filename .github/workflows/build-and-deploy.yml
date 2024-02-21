@@ -64,7 +64,7 @@ jobs:
     - name: Run packer validate
       run: |
         packer validate \
-          -var "binary_path=./dummy/webapp_dummy" \
+          -var "binary_path=../dummy/webapp_dummy" \
           -var "db_user=${{ secrets.DB_USER }}" \
           -var "db_password=${{ secrets.DB_PASSWORD }}" \
           -var "db_name=${{ secrets.DB_NAME }}" \
