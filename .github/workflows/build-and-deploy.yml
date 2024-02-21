@@ -46,11 +46,6 @@ jobs:
       run: exit 1
       working-directory: ./webapp/custom_image
 
-    - name: Debug current working directory 1
-      run: |
-        pwd
-        ls -la
-
     - name: List contents of the custom_image directory 1
       run: ls -la
       working-directory: ./webapp/custom_image
@@ -61,10 +56,18 @@ jobs:
         touch ./webapp/dummy/webapp_dummy
       working-directory: ./webapp
 
+    - name: Debug current working directory 1
+      run: |
+        pwd
+        ls -la
+        
+
     - name: Run packer validate
       run: |
+        pwd
+        ls -la
         packer validate \
-          -var "binary_path=../../dummy/webapp_dummy" \
+          -var "binary_path=../webapp/dummy/webapp_dummy" \
           -var "db_user=${{ secrets.DB_USER }}" \
           -var "db_password=${{ secrets.DB_PASSWORD }}" \
           -var "db_name=${{ secrets.DB_NAME }}" \
