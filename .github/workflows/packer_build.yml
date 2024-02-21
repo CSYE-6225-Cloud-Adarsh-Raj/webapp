@@ -94,15 +94,16 @@ jobs:
       run: |
         pwd
         ls -la
-  
+
     - name: List contents of the custom_image directory
       run: ls -la
-      working-directory: ./webapp/custom_image
+      working-directory: ./custom_image
 
     - name: Packer init
       run: |
         packer init webapp_image.pkr.hcl
-      working-directory: ./webapp/custom_image
+      working-directory: ./custom_image
+
 
     - name: Run Packer to build the image
       run: |
@@ -113,6 +114,6 @@ jobs:
             -var "db_password=${{ secrets.DB_PASSWORD }}" \
             -var "db_name=${{ secrets.DB_NAME }}" \
             webapp_image.pkr.hcl
-      working-directory: ./webapp/custom_image
+      working-directory: ./custom_image
       env:
         BINARY_PATH: ./artifact/webapp
