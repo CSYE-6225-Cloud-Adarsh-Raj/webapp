@@ -71,9 +71,9 @@ jobs:
         sudo rm -f /usr/local/bin/packer
         sudo mv /tmp/packer /usr/local/bin
 
-    - name: List binary path
-      run: |
-        ls -la ./artifact/webapp
+    # - name: List binary path
+    #   run: |
+    #     ls -la ./artifact/webapp
 
     # - name: Prepare and Validate Packer Configuration
     #   run: |
