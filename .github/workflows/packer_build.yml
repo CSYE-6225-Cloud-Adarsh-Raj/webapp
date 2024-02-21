@@ -3,11 +3,10 @@ name: Packer Build
 on:
   workflow_run:
     workflows: ["Go Test"]
+    branches: [ "main" ]
     types:
       - completed
-  push:
-    branches: [ "main" ]
-
+    
 jobs:
   build-and-upload-binary:
     if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
