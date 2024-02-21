@@ -90,6 +90,11 @@ jobs:
     #   env:
     #     BINARY_PATH: ./artifact/webapp
 
+    - name: Debug current working directory packer build
+      run: |
+        pwd
+        ls -la
+  
     - name: List contents of the custom_image directory
       run: ls -la
       working-directory: ./webapp/custom_image
