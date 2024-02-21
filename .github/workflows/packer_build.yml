@@ -10,10 +10,13 @@ on:
 
 jobs:
   build-and-upload-binary:
-    if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
+    - name: Log triggering event
+      run: echo "Workflow triggered by ${{ github.event_name }}, with conclusion ${{ github.event.workflow_run.conclusion }}"
+
     - name: Checkout code
+      if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
       uses: actions/checkout@v4
       with:
         path: webapp
