@@ -75,7 +75,8 @@ build {
   #}
 
   provisioner "shell" {
-    script = "./custom_image/install_postgresql.sh"
+    #script = "./custom_image/install_postgresql.sh"
+    script = "./install_postgresql.sh"
     environment_vars = [
       "DB_USER=${var.db_user}",
       "DB_PASSWORD=${var.db_password}",
