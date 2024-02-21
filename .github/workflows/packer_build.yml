@@ -5,7 +5,38 @@ on:
     branches: [ "main" ]
 
 jobs:
+  build-and-upload:
+    if: (github.event_name == 'pull_request' || github.event_name == 'push') && github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        path: webapp
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21.6'
+
+    - name: Build dependencies
+      run: go mod tidy
+      working-directory: ./webapp
+
+    - name: Build Go application
+      run: |
+        # go build -v -o ./myapp .
+        CGO_ENABLED=0 go build -v -a -installsuffix cgo -o ./webapp .
+      working-directory: ./webapp
+
+    - name: Upload Go binary as an artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: webapp-binary
+        path: ./webapp/webapp
+
   integration-test-and-build-image:
+    needs: build-and-upload
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code again
