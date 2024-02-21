@@ -70,8 +70,8 @@ jobs:
           -var "db_user=${{ secrets.DB_USER }}" \
           -var "db_password=${{ secrets.DB_PASSWORD }}" \
           -var "db_name=${{ secrets.DB_NAME }}" \
-          webapp_image.pkr.hcl
-      working-directory: ./webapp/custom_image
+          ./custom_image/webapp_image.pkr.hcl
+      working-directory: ./webapp
 
   build-and-upload:
     needs: packer-format-and-validate
