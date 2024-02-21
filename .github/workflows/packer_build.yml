@@ -1,12 +1,16 @@
-name: Packer build
+name: Packer Build
 
 on:
+  workflow_run:
+    workflows: ["Go Test"]
+    types:
+      - completed
   push:
     branches: [ "main" ]
 
 jobs:
-  build-and-upload:
-    if: (github.event_name == 'pull_request' || github.event_name == 'push') && github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
+  build-and-upload-binary:
+    if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -25,7 +29,6 @@ jobs:
 
     - name: Build Go application
       run: |
-        # go build -v -o ./myapp .
         CGO_ENABLED=0 go build -v -a -installsuffix cgo -o ./webapp .
       working-directory: ./webapp
 
@@ -35,8 +38,8 @@ jobs:
         name: webapp-binary
         path: ./webapp/webapp
 
-  integration-test-and-build-image:
-    needs: build-and-upload
+  build-packer-image:
+    needs: build-and-upload-binary
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code again
@@ -52,7 +55,6 @@ jobs:
       run: |
           chmod +x ./artifact/webapp
       
-    #Put auth
     - name: Authenticate to GCP
       uses: google-github-actions/auth@v2
       with:
@@ -70,25 +72,6 @@ jobs:
         unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
         sudo rm -f /usr/local/bin/packer
         sudo mv /tmp/packer /usr/local/bin
-
-    # - name: List binary path
-    #   run: |
-    #     ls -la ./artifact/webapp
-
-    # - name: Prepare and Validate Packer Configuration
-    #   run: |
-    #     # cd custom_image
-    #     packer init ./custom_image/webapp_image.pkr.hcl
-    #     packer fmt ./custom_image/webapp_image.pkr.hcl
-    #     # packer validate -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
-    #     packer validate \
-    #         -var "binary_path=${BINARY_PATH}" \
-    #         -var "db_user=${{ secrets.DB_USER }}" \
-    #         -var "db_password=${{ secrets.DB_PASSWORD }}" \
-    #         -var "db_name=${{ secrets.DB_NAME }}" \
-    #         ./custom_image/webapp_image.pkr.hcl
-    #   env:
-    #     BINARY_PATH: ./artifact/webapp
 
     - name: Debug current working directory packer build
       run: |
