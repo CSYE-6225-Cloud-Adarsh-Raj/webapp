@@ -1,4 +1,4 @@
-name: Build and Deploy Go Application
+name: Packer Format & Validate
 
 on:
   pull_request:
@@ -61,7 +61,6 @@ jobs:
         pwd
         ls -la
         
-
     - name: Run packer validate
       run: |
         pwd
