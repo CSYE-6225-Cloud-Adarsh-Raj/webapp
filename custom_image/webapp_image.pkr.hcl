@@ -131,7 +131,8 @@ build {
   }
 
   provisioner "shell" {
-    script = "./custom_image/replace_envs.sh"
+    #script = "./custom_image/replace_envs.sh"
+    script = "./replace_envs.sh"
     environment_vars = [
       "DB_USER=${var.db_user}",
       "DB_HOST=localhost",
