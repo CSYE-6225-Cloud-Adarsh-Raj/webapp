@@ -8,13 +8,13 @@ packer {
 }
 
 variable "project_id" {
-  type    = string
+  type = string
   #description = "The Projetc ID"
   default = "csye6225-dev-414220"
 }
 
 variable "zone" {
-  type    = string
+  type = string
   #description = "The zone in the GCP"
   default = "us-central1-b"
 }
@@ -75,7 +75,8 @@ build {
   #}
 
   provisioner "shell" {
-    script = "./custom_image/install_postgresql.sh"
+    #script = "./custom_image/install_postgresql.sh"
+    script = "./install_postgresql.sh"
     environment_vars = [
       "DB_USER=${var.db_user}",
       "DB_PASSWORD=${var.db_password}",
@@ -84,7 +85,8 @@ build {
   }
 
   provisioner "shell" {
-    script = "./custom_image/install_golang.sh"
+    #script = "./custom_image/install_golang.sh"
+    script = "./install_golang.sh"
   }
 
   provisioner "file" {
@@ -115,7 +117,8 @@ build {
   }
 
   provisioner "file" {
-    source      = "./custom_image/webapp.service"
+    #source      = "./custom_image/webapp.service"
+    source      = "./webapp.service"
     destination = "/tmp/webapp.service"
   }
 
@@ -128,14 +131,15 @@ build {
   }
 
   provisioner "shell" {
-    script = "./custom_image/replace_envs.sh"
+    #script = "./custom_image/replace_envs.sh"
+    script = "./replace_envs.sh"
     environment_vars = [
       "DB_USER=${var.db_user}",
       "DB_HOST=localhost",
       "DB_PASSWORD=${var.db_password}",
       "DB_NAME=${var.db_name}"
     ]
-  } 
+  }
 
   provisioner "shell" {
     inline = [
@@ -145,7 +149,8 @@ build {
   }
 
   provisioner "file" {
-    source      = "./custom_image/restart_webapp.sh"
+    #source      = "./custom_image/restart_webapp.sh"
+    source      = "./restart_webapp.sh"
     destination = "/tmp/restart_webapp.sh"
   }
 
@@ -160,7 +165,8 @@ build {
   }
 
   provisioner "file" {
-    source      = "./custom_image/restart_webapp.service"
+    #source      = "./custom_image/restart_webapp.service"
+    source      = "./restart_webapp.service"
     destination = "/tmp/restart_webapp.service"
   }
 

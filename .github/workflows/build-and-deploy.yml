@@ -3,9 +3,88 @@ name: Build and Deploy Go Application
 on:
   pull_request:
     branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+    
 
 jobs:
+  packer-format-and-validate:
+    if: github.event_name == 'pull_request' && github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        path: webapp
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21.6'
+
+    - name: Build dependencies
+      run: go mod tidy
+      working-directory: ./webapp
+
+    - name: Build Go application
+      run: CGO_ENABLED=0 go build -v -a -installsuffix cgo -o ./webapp .
+      working-directory: ./webapp
+
+
+    - name: Install Packer
+      run: |
+        curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
+        unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
+        sudo mv /tmp/packer /usr/local/bin
+
+    - name: Debug current working directory
+      run: |
+        pwd
+        ls -la
+
+    - name: List contents of the custom_image directory
+      run: ls -la
+      working-directory: ./webapp/custom_image
+
+    - name: Packer init
+      run: |
+        packer init webapp_image.pkr.hcl
+      working-directory: ./webapp/custom_image
+
+    - name: Run packer fmt
+      run: |
+        packer fmt -check -diff webapp_image.pkr.hcl
+      id: fmt
+      continue-on-error: true
+      working-directory: ./webapp/custom_image
+
+    - name: Fail if packer fmt made changes
+      if: steps.fmt.outcome == 'failure'
+      run: exit 1
+      working-directory: ./webapp/custom_image
+
+    - name: Debug current working directory 1
+      run: |
+        pwd
+        ls -la
+
+    - name: List contents of the custom_image directory 1
+      run: ls -la
+      working-directory: ./webapp/custom_image
+
+    - name: Run packer validate
+      run: |
+        packer validate \
+          -var "binary_path=../webapp" \
+          -var "db_user=${{ secrets.DB_USER }}" \
+          -var "db_password=${{ secrets.DB_PASSWORD }}" \
+          -var "db_name=${{ secrets.DB_NAME }}" \
+          webapp_image.pkr.hcl
+      working-directory: ./webapp/custom_image
+
   build-and-upload:
+    needs: packer-format-and-validate
+    if: (github.event_name == 'pull_request' || github.event_name == 'push') && github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -34,7 +113,8 @@ jobs:
         name: webapp-binary
         path: ./webapp/webapp
 
-  packer-build:
+  integration-test-and-build-image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-and-upload
     runs-on: ubuntu-latest
     steps:
@@ -51,7 +131,7 @@ jobs:
       run: |
           chmod +x ./artifact/webapp
       
-
+    #Put auth
     - name: Authenticate to GCP
       uses: google-github-actions/auth@v2
       with:
@@ -74,20 +154,20 @@ jobs:
       run: |
         ls -la ./artifact/webapp
 
-    - name: Prepare and Validate Packer Configuration
-      run: |
-        # cd custom_image
-        packer init ./custom_image/webapp_image.pkr.hcl
-        packer fmt ./custom_image/webapp_image.pkr.hcl
-        # packer validate -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
-        packer validate \
-            -var "binary_path=${BINARY_PATH}" \
-            -var "db_user=${{ secrets.DB_USER }}" \
-            -var "db_password=${{ secrets.DB_PASSWORD }}" \
-            -var "db_name=${{ secrets.DB_NAME }}" \
-            ./custom_image/webapp_image.pkr.hcl
-      env:
-        BINARY_PATH: ./artifact/webapp
+    # - name: Prepare and Validate Packer Configuration
+    #   run: |
+    #     # cd custom_image
+    #     packer init ./custom_image/webapp_image.pkr.hcl
+    #     packer fmt ./custom_image/webapp_image.pkr.hcl
+    #     # packer validate -var "binary_path=${BINARY_PATH}" ./custom_image/webapp_image.pkr.hcl
+    #     packer validate \
+    #         -var "binary_path=${BINARY_PATH}" \
+    #         -var "db_user=${{ secrets.DB_USER }}" \
+    #         -var "db_password=${{ secrets.DB_PASSWORD }}" \
+    #         -var "db_name=${{ secrets.DB_NAME }}" \
+    #         ./custom_image/webapp_image.pkr.hcl
+    #   env:
+    #     BINARY_PATH: ./artifact/webapp
 
     - name: Run Packer to build the image
       run: |

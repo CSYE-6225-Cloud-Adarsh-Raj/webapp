@@ -143,5 +143,59 @@ DEMO commands:
 > SELECT * from user_models;
 > sudo systemctl status postgresql-16
 
-Added workflow file and HCL file
-Updating readme to start workflow
+
+
+
+Commads:
+sudo journalctl -u myservice.service
+sudo setenforce 0
+
+
+Questions:
+Do we need default vpc for packer temp vm?
+Image name in packer
+
+serrvice account
+
+service user in vm
+
+no ssh login
+
+ubuntu build and centos binary
+
+gicing computing resource inside packer
+
+default machine config for packerr
+
+SELinux getenfirrce permissive or enforcing issue
+
+DO NOT COMMIT WITH PASSWORD FOR DB!!!!!!
+
+test ffails then dont create packer image
+
+Erron fial in hcl, dont proceed
+additional from packer:
+
+sudo su packer
+chmod +x myapp 
+ls -alrt
+./myapp 
+
+chcon -t bin_t webapp
+
+# Add the provisioner for replacing environment variables here
+  provisioner "shell" {
+    script = "./custom_image/replace_envs.sh"
+    environment_vars = [
+      "DB_USER=${var.db_user}",
+      "DB_HOST=localhost",
+      "DB_PASSWORD=${var.db_password}",
+      "DB_NAME=${var.db_name}"
+    ]
+    execute_command = "sudo bash {{.Path}}"
+  }
+
+terraform workspace new prod
+
+
+sudo -u postgres psql -d integration_test
