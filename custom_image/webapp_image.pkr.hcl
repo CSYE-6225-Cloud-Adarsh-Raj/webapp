@@ -8,15 +8,15 @@ packer {
 }
 
 variable "project_id" {
-  type = string
+  type        = string
   description = "The Projetc ID"
-  default = "csye6225-dev-414220"
+  default     = "csye6225-dev-414220"
 }
 
 variable "zone" {
-  type = string
+  type        = string
   description = "The zone in the GCP"
-  default = "us-central1-b"
+  default     = "us-central1-b"
 }
 
 variable "binary_path" {
