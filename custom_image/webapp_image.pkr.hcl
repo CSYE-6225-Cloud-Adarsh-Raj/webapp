@@ -85,7 +85,8 @@ build {
   }
 
   provisioner "shell" {
-    script = "./custom_image/install_golang.sh"
+    #script = "./custom_image/install_golang.sh"
+    script = "./install_golang.sh"
   }
 
   provisioner "file" {
@@ -116,7 +117,8 @@ build {
   }
 
   provisioner "file" {
-    source      = "./custom_image/webapp.service"
+    #source      = "./custom_image/webapp.service"
+    source      = "./webapp.service"
     destination = "/tmp/webapp.service"
   }
 
@@ -146,7 +148,8 @@ build {
   }
 
   provisioner "file" {
-    source      = "./custom_image/restart_webapp.sh"
+    #source      = "./custom_image/restart_webapp.sh"
+    source      = "./restart_webapp.sh"
     destination = "/tmp/restart_webapp.sh"
   }
 
@@ -161,7 +164,8 @@ build {
   }
 
   provisioner "file" {
-    source      = "./custom_image/restart_webapp.service"
+    #source      = "./custom_image/restart_webapp.service"
+    source      = "./restart_webapp.service"
     destination = "/tmp/restart_webapp.service"
   }
 
