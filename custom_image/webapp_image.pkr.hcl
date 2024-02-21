@@ -9,13 +9,13 @@ packer {
 
 variable "project_id" {
   type = string
-  #description = "The Projetc ID"
+  description = "The Projetc ID"
   default = "csye6225-dev-414220"
 }
 
 variable "zone" {
   type = string
-  #description = "The zone in the GCP"
+  description = "The zone in the GCP"
   default = "us-central1-b"
 }
 
@@ -61,13 +61,7 @@ build {
   ]
 
   provisioner "shell" {
-    inline = [
-      "echo Creating group csye6225",
-      "sudo groupadd csye6225",
-      "echo Creating user csye6225 with no login shell",
-      "sudo useradd -r -g csye6225 -s /usr/sbin/nologin csye6225",
-      "echo User and group csye6225 created successfully"
-    ]
+    script = "./create_user.sh"
   }
 
   #provisioner "shell" {
@@ -75,7 +69,6 @@ build {
   #}
 
   provisioner "shell" {
-    #script = "./custom_image/install_postgresql.sh"
     script = "./install_postgresql.sh"
     environment_vars = [
       "DB_USER=${var.db_user}",
@@ -85,7 +78,6 @@ build {
   }
 
   provisioner "shell" {
-    #script = "./custom_image/install_golang.sh"
     script = "./install_golang.sh"
   }
 
@@ -95,43 +87,23 @@ build {
   }
 
   provisioner "shell" {
-    inline = [
-      "echo Installing policycoreutils-python-utils for semanage",
-      "sudo dnf install -y policycoreutils-python-utils",
-      "echo policycoreutils-python-utils installed successfully"
-    ]
+    script = "./semanage.sh"
   }
 
   provisioner "shell" {
-    inline = [
-      "echo Moving /tmp/webapp to /usr/local/bin",
-      "sudo mv /tmp/webapp /usr/local/bin/webapp",
-      "sudo chmod +x /usr/local/bin/webapp",
-      "sudo chown csye6225:csye6225 /usr/local/bin/webapp",
-      "echo Setting SELinux context for /usr/local/bin/webapp",
-      "sudo semanage fcontext -a -t bin_t '/usr/local/bin/webapp'",
-      "sudo restorecon -v '/usr/local/bin/webapp'",
-      "echo Listing contents of /usr/local/bin",
-      "ls -la /usr/local/bin/"
-    ]
+    script = "./wb_system_p.sh"
   }
 
   provisioner "file" {
-    #source      = "./custom_image/webapp.service"
     source      = "./webapp.service"
     destination = "/tmp/webapp.service"
   }
 
   provisioner "shell" {
-    inline = [
-      "sudo mv /tmp/webapp.service /etc/systemd/system/webapp.service",
-      "sudo chown csye6225:csye6225 /etc/systemd/system/webapp.service",
-      "sudo systemctl daemon-reload",
-    ]
+    script = "./wb_user.sh"
   }
 
   provisioner "shell" {
-    #script = "./custom_image/replace_envs.sh"
     script = "./replace_envs.sh"
     environment_vars = [
       "DB_USER=${var.db_user}",
@@ -142,39 +114,24 @@ build {
   }
 
   provisioner "shell" {
-    inline = [
-      "sudo systemctl enable webapp.service",
-      "sudo systemctl start webapp.service"
-    ]
+    script = "./wb_start.sh"
   }
 
   provisioner "file" {
-    #source      = "./custom_image/restart_webapp.sh"
     source      = "./restart_webapp.sh"
     destination = "/tmp/restart_webapp.sh"
   }
 
   provisioner "shell" {
-    inline = [
-      "sudo mv /tmp/restart_webapp.sh /usr/local/bin/restart_webapp.sh",
-      "sudo chmod +x /usr/local/bin/restart_webapp.sh",
-      "sudo chown csye6225:csye6225 /usr/local/bin/restart_webapp.sh",
-      "sudo semanage fcontext -a -t bin_t '/usr/local/bin/restart_webapp.sh'",
-      "sudo restorecon -v '/usr/local/bin/restart_webapp.sh'"
-    ]
+    script = "./restart_wb_p.sh"
   }
 
   provisioner "file" {
-    #source      = "./custom_image/restart_webapp.service"
     source      = "./restart_webapp.service"
     destination = "/tmp/restart_webapp.service"
   }
 
   provisioner "shell" {
-    inline = [
-      "sudo mv /tmp/restart_webapp.service /etc/systemd/system/restart_webapp.service",
-      "sudo chown csye6225:csye6225 /etc/systemd/system/restart_webapp.service",
-      "sudo systemctl enable restart_webapp.service"
-    ]
+    script = "./restart_wb.sh"
   }
 }

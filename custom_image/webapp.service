@@ -4,16 +4,19 @@ After=network.target
 
 [Service]
 Type=simple
-User=packer
+User=csye6225
+Group=csye6225
 ExecStart=/usr/local/bin/webapp
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=csye6225
+Restart=on-failure
 
-# Optionally, set environment variables
+#Set Environment variables
 Environment=DB_USER=${DB_USER}
 Environment=DB_HOST=${DB_HOST}
 Environment=DB_PASSWORD=${DB_PASSWORD}
 Environment=DB_NAME=${DB_NAME}
-
-Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
