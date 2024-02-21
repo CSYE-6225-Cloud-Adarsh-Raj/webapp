@@ -38,9 +38,9 @@ jobs:
         sudo mv /tmp/packer /usr/local/bin
 
     - name: Debug current working directory
-    run: |
-      pwd
-      ls -la
+      run: |
+        pwd
+        ls -la
 
     - name: List contents of the custom_image directory
       run: ls -la
