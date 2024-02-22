@@ -65,7 +65,7 @@ build {
   }
 
   provisioner "shell" {
-  script = "./update_system.sh"
+    script = "./update_system.sh"
   }
 
   provisioner "shell" {
