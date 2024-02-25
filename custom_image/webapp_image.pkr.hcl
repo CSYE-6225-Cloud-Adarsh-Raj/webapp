@@ -39,9 +39,9 @@ variable "db_name" {
   description = "Database Name"
 }
 
-#locals {
-#  timestamp = "${lower(regex_replace(timestamp(), "[-:TZ]", "-"))}"
-#}
+locals {
+  timestamp = "${lower(regex_replace(timestamp(), "[-:TZ]", "-"))}"
+}
 
 
 source "googlecompute" "centos_stream" {
