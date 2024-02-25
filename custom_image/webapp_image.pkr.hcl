@@ -39,9 +39,9 @@ variable "db_name" {
   description = "Database Name"
 }
 
-locals {
-  timestamp = "${lower(regex_replace(timestamp(), "[-:TZ]", "-"))}"
-}
+#locals {
+#  timestamp = "${lower(regex_replace(timestamp(), "[-:TZ]", "-"))}"
+#}
 
 
 source "googlecompute" "centos_stream" {
@@ -52,7 +52,6 @@ source "googlecompute" "centos_stream" {
   machine_type            = "e2-medium"
   ssh_username            = "packer"
   image_name              = "webapp-golden-${local.timestamp}-image"
-  
   image_family            = "centos-stream-custom"
 }
 
