@@ -22,22 +22,23 @@ variable "zone" {
 variable "binary_path" {
   type        = string
   description = "The path to the Go binary"
+  default     = "../webapp"
 }
 
-variable "db_user" {
-  type        = string
-  description = "Database User"
-}
+#variable "db_user" {
+#  type        = string
+#  description = "Database User"
+#}
 
-variable "db_password" {
-  type        = string
-  description = "Database Password"
-}
+#variable "db_password" {
+#  type        = string
+#  description = "Database Password"
+#}
 
-variable "db_name" {
-  type        = string
-  description = "Database Name"
-}
+#variable "db_name" {
+#  type        = string
+#  description = "Database Name"
+#}
 
 locals {
   timestamp = "${lower(regex_replace(timestamp(), "[-:TZ]", "-"))}"
@@ -64,18 +65,18 @@ build {
     script = "./create_user.sh"
   }
 
-  provisioner "shell" {
-    script = "./update_system.sh"
-  }
+  #provisioner "shell" {
+  #  script = "./update_system.sh"
+  #}
 
-  provisioner "shell" {
-    script = "./install_postgresql.sh"
-    environment_vars = [
-      "DB_USER=${var.db_user}",
-      "DB_PASSWORD=${var.db_password}",
-      "DB_NAME=${var.db_name}"
-    ]
-  }
+  #provisioner "shell" {
+  #  script = "./install_postgresql.sh"
+  #  environment_vars = [
+  #    "DB_USER=${var.db_user}",
+  #    "DB_PASSWORD=${var.db_password}",
+  #    "DB_NAME=${var.db_name}"
+  #  ]
+  #}
 
   provisioner "shell" {
     script = "./install_golang.sh"
@@ -94,6 +95,13 @@ build {
     script = "./wb_system_p.sh"
   }
 
+  provisioner "shell" {
+    inline = [
+      "sudo mkdir -p /etc",
+      "echo '# Placeholder for environment variables' | sudo tee /etc/webapp.env"
+    ]
+  }
+
   provisioner "file" {
     source      = "./webapp.service"
     destination = "/tmp/webapp.service"
@@ -103,15 +111,15 @@ build {
     script = "./wb_user.sh"
   }
 
-  provisioner "shell" {
-    script = "./replace_envs.sh"
-    environment_vars = [
-      "DB_USER=${var.db_user}",
-      "DB_HOST=localhost",
-      "DB_PASSWORD=${var.db_password}",
-      "DB_NAME=${var.db_name}"
-    ]
-  }
+  #provisioner "shell" {
+  #  script = "./replace_envs.sh"
+  #  environment_vars = [
+  #    "DB_USER=${var.db_user}",
+  #    "DB_HOST=localhost",
+  #    "DB_PASSWORD=${var.db_password}",
+  #    "DB_NAME=${var.db_name}"
+  #  ]
+  #}
 
   provisioner "shell" {
     script = "./wb_start.sh"

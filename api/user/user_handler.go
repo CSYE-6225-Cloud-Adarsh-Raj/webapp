@@ -202,9 +202,14 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			"password":   true,
 		}
 
-		for key := range userDetails {
+		for key, value := range userDetails {
 			if !allowedFields[key] {
 				fmt.Printf("UpdateUserHandler() - Error: Field '%s' not allowed\n", key)
+				c.Status(http.StatusBadRequest)
+				return
+			}
+			if value == "" {
+				fmt.Printf("UpdateUserHandler() - Error: Field '%s' cannot be empty\n", key)
 				c.Status(http.StatusBadRequest)
 				return
 			}
