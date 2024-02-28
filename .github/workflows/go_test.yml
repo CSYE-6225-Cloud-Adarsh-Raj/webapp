@@ -10,17 +10,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
     if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
-        ports:
-          - 5432:5432
+    # services:
+    #   postgres:
+    #     image: postgres:16
+    #     env:
+    #       POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+    #       POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+    #       POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
+    #     ports:
+    #       - 5432:5432
 
     steps:
+    - name: Setup Postgres
+      run: |
+        sudo systemctl start postgresql
+        sudo systemctl enable postgresql
+        sudo -u postgres psql -c "CREATE USER ${{ secrets.TEST_DB_USER }} WITH PASSWORD  '${{ secrets.TEST_DB_PASSWORD }}'"
+        sudo -u postgres psql -c "CREATE DATABASE ${{ secrets.TEST_DB_NAME }}" 
+        sudo -u postgres psql -c "ALTER ROLE ${{ secrets.TEST_DB_USER }} SUPERUSER"
+        sudo systemctl restart postgresql
     - uses: actions/checkout@v4
     - name: Set up Go
       uses: actions/setup-go@v4

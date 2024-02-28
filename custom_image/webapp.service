@@ -13,10 +13,7 @@ SyslogIdentifier=csye6225
 Restart=on-failure
 
 #Set Environment variables
-Environment=DB_USER=${DB_USER}
-Environment=DB_HOST=${DB_HOST}
-Environment=DB_PASSWORD=${DB_PASSWORD}
-Environment=DB_NAME=${DB_NAME}
+EnvironmentFile=/etc/webapp.env
 
 [Install]
 WantedBy=multi-user.target

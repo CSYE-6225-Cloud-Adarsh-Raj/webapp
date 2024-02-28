@@ -4,9 +4,9 @@ After=network.target
 
 [Service]
 Type=oneshot
+ExecStartPre=/bin/sh -c 'while [ ! -f /etc/webapp.flag ]; do sleep 1; done'
 ExecStart=/usr/local/bin/restart_webapp.sh
 RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
-
