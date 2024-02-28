@@ -202,24 +202,28 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			"password":   true,
 		}
 
+		providedFieldsCount := 0
 		for key, value := range userDetails {
-			if !allowedFields[key] {
+			if allowedFields[key] {
+				if valueStr, ok := value.(string); ok && valueStr != "" {
+					providedFieldsCount++
+				} else {
+					fmt.Printf("UpdateUserHandler() - Error: Field '%s' cannot be empty\n", key)
+					c.Status(http.StatusBadRequest)
+					return
+				}
+			} else {
 				fmt.Printf("UpdateUserHandler() - Error: Field '%s' not allowed\n", key)
-				c.Status(http.StatusBadRequest)
-				return
-			}
-			if value == "" {
-				fmt.Printf("UpdateUserHandler() - Error: Field '%s' cannot be empty\n", key)
 				c.Status(http.StatusBadRequest)
 				return
 			}
 		}
 
-		// if userDetails.Username != "" {
-		// 	fmt.Println("UpdateUserHandler() - Error: Updating username/email is not allowed")
-		// 	c.Status(http.StatusBadRequest)
-		// 	return
-		// }
+		if providedFieldsCount < 3 {
+			fmt.Println("UpdateUserHandler() - Error: At least three fields must be provided for update with non-empty values")
+			c.Status(http.StatusBadRequest)
+			return
+		}
 
 		userID := GetUserID(c)
 
