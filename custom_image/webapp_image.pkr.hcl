@@ -65,9 +65,9 @@ build {
     script = "./create_user.sh"
   }
 
-  provisioner "shell" {
-    script = "./update_system.sh"
-  }
+  #provisioner "shell" {
+  #  script = "./update_system.sh"
+  #}
 
   #provisioner "shell" {
   #  script = "./install_postgresql.sh"
@@ -77,6 +77,29 @@ build {
   #    "DB_NAME=${var.db_name}"
   #  ]
   #}
+
+  provisioner "shell" {
+    script = "./install_opsagent.sh"
+  }
+
+  provisioner "file" {
+    source      = "webapp-logs.yaml"
+    destination = "/tmp/webapp-logs.yaml"
+  }
+
+  #provisioner "shell" {
+  #  inline = [
+  #    "sudo mv /tmp/webapp-logs.yaml /etc/google-cloud-ops-agent/conf.d/webapp-logs.yaml"
+  #  ]
+  #}
+
+  provisioner "shell" {
+    script = "./setup_opsagent_conf.sh"
+  }
+
+  provisioner "shell" {
+    script = "./restart_opsagent.sh"
+  }
 
   provisioner "shell" {
     script = "./install_golang.sh"
