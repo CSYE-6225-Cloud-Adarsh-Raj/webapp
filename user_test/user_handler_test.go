@@ -10,6 +10,7 @@ import (
 	"os"
 	"testing"
 	"webapp/api/user"
+	"webapp/logger"
 	"webapp/router"
 
 	"gorm.io/driver/postgres"
@@ -43,6 +44,7 @@ func TestMain(m *testing.M) {
 	err := db.AutoMigrate(&user.UserModel{})
 	if err != nil {
 		fmt.Println("Failed to migrate testtable schema")
+		logger.Logger.Error("TestMain() - Failed to migrate testtable schema")
 		os.Exit(1)
 	}
 	code := m.Run()
@@ -103,7 +105,8 @@ func TestCreateAndGetUser(t *testing.T) {
 		t.Fatalf("Expected username %s, got %s", userData["username"], responseBody["username"])
 	}
 
-	fmt.Println("ALL TESTS PASSED in TestCreateAndGetUser() !!!")
+	// fmt.Println("ALL TESTS PASSED in TestCreateAndGetUser() !!!")
+	logger.Logger.Error("TestCreateAndGetUser() - ALL TESTS PASSED !!!")
 }
 
 func TestUpdateAndGetUser(t *testing.T) {
@@ -160,5 +163,6 @@ func TestUpdateAndGetUser(t *testing.T) {
 		t.Fatalf("Expected first name %s, got %s", updatedUserData["first_name"], responseBody["first_name"])
 	}
 
-	fmt.Println("ALL TESTS PASSED in TestUpdateAndGetUser() !!!")
+	// fmt.Println("ALL TESTS PASSED in TestUpdateAndGetUser() !!!")
+	logger.Logger.Error("TestUpdateAndGetUser() - ALL TESTS PASSED!!!")
 }

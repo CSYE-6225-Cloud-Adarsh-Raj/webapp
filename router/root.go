@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,26 +8,30 @@ import (
 
 	"webapp/api/health"
 	"webapp/api/user"
+	"webapp/logger"
 )
 
 func AuthenticationMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username, password, ok := c.Request.BasicAuth()
 		if !ok {
-			fmt.Println("AuthenticationMiddleware() - Error: Basic authentication required")
+			// fmt.Println("AuthenticationMiddleware() - Error: Basic authentication required")
+			logger.Logger.Error("AuthenticationMiddleware() - Basic authentication required")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{})
 			return
 		}
 
 		if !user.ValidateCredentials(db, username, password) {
-			fmt.Println("AuthenticationMiddleware() - Error: Invalid credentials")
+			// fmt.Println("AuthenticationMiddleware() - Error: Invalid credentials")
+			logger.Logger.Error("AuthenticationMiddleware() - Invalid credentials")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{})
 			return
 		}
 
 		var user user.UserModel
 		if err := db.Where("username = ?", username).First(&user).Error; err != nil {
-			fmt.Println("AuthenticationMiddleware() - Error: Failed to retrieve user ID details")
+			// fmt.Println("AuthenticationMiddleware() - Error: Failed to retrieve user ID details")
+			logger.Logger.Error("AuthenticationMiddleware() - Failed to retrieve user ID details")
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
@@ -62,7 +65,8 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 		}
 
 		if nonAuthEndpoints[path] && authHeader != "" {
-			fmt.Println("Error: Non-authenticated endpoint should not include Authorization header")
+			// fmt.Println("Error: Non-authenticated endpoint should not include Authorization header")
+			logger.Logger.Error("InitRouter() -Non-authenticated endpoint should not include Authorization header")
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
