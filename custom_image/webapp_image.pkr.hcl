@@ -94,7 +94,7 @@ build {
   #}
 
   provisioner "shell" {
-    script = "./setup_opsagent_conf.sh"
+    script = "./setup_opsagent.sh"
   }
 
   provisioner "shell" {
