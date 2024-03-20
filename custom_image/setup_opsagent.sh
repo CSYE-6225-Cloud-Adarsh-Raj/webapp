@@ -6,6 +6,6 @@ else
   echo Directory /etc/google-cloud-ops-agent/conf.d exists.
 fi
 
-echo Moving /tmp/webapp-logs.yaml to /etc/google-cloud-ops-agent/conf.d/
-sudo mv /tmp/webapp-logs.yaml /etc/google-cloud-ops-agent/conf.d/webapp-logs.yaml
+echo Moving /tmp/config.yaml to /etc/google-cloud-ops-agent/config.yaml
+sudo mv /tmp/config.yaml /etc/google-cloud-ops-agent/config.yaml
 echo Move operation completed.

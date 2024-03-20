@@ -83,15 +83,9 @@ build {
   }
 
   provisioner "file" {
-    source      = "webapp-logs.yaml"
-    destination = "/tmp/webapp-logs.yaml"
+    source      = "config.yaml"
+    destination = "/tmp/config.yaml"
   }
-
-  #provisioner "shell" {
-  #  inline = [
-  #    "sudo mv /tmp/webapp-logs.yaml /etc/google-cloud-ops-agent/conf.d/webapp-logs.yaml"
-  #  ]
-  #}
 
   provisioner "shell" {
     script = "./setup_opsagent.sh"
