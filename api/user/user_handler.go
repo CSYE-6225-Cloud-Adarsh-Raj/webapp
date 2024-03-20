@@ -276,7 +276,7 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		// fmt.Println("UpdateUserHandler() - User details updated successfully")
-		logger.Logger.Error("UpdateUserHandler() - User details updated successfully")
+		logger.Logger.Info("UpdateUserHandler() - User details updated successfully")
 		c.Status(http.StatusNoContent)
 	}
 }
