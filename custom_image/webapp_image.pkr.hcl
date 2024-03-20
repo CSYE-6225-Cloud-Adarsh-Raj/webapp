@@ -65,9 +65,9 @@ build {
     script = "./create_user.sh"
   }
 
-  #provisioner "shell" {
-  #  script = "./update_system.sh"
-  #}
+  provisioner "shell" {
+    script = "./update_system.sh"
+  }
 
   #provisioner "shell" {
   #  script = "./install_postgresql.sh"
