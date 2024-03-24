@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -121,56 +122,59 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 
 		// Initialize Pub/Sub client
 		ctx := context.Background()
-		pubsubClient, err := pubsub.NewClient(ctx, projectID)
-		if err != nil {
-			logger.Logger.Errorf("Failed to create Pub/Sub client: %v", err)
-			c.Status(http.StatusInternalServerError)
-			return
+		if os.Getenv("SKIP_PUBSUB") != "true" {
+			pubsubClient, err := pubsub.NewClient(ctx, projectID)
+			if err != nil {
+				logger.Logger.Errorf("Failed to create Pub/Sub client: %v", err)
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+			defer pubsubClient.Close()
+
+			// Get the Pub/Sub topic
+			topic := pubsubClient.Topic(topicName)
+
+			// Create an instance of VerificationMessage with the necessary data
+			vMessage := VerificationMessage{
+				Email:             user.Username,
+				VerificationToken: verMsg.VerificationToken,
+			}
+
+			// Marshal the VerificationMessage into JSON
+			jsonData, err := json.Marshal(vMessage)
+			if err != nil {
+				logger.Logger.Errorf("Error marshaling verification message: %v", err)
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+
+			// Prepare and publish the message with jsonData
+			msg := &pubsub.Message{
+				Data: jsonData,
+				Attributes: map[string]string{
+					"email": user.Username,
+				},
+			}
+
+			// // Prepare and publish the message
+			// msg := &pubsub.Message{
+			// 	Data: []byte("Verification token: " + user.VerificationToken.String()),
+			// 	Attributes: map[string]string{
+			// 		"email": user.Username,
+			// 	},
+			// }
+			result := topic.Publish(ctx, msg)
+
+			// Wait for the result
+			id, err := result.Get(ctx)
+			if err != nil {
+				logger.Logger.Errorf("Failed to publish to Pub/Sub: %v", err)
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+			logger.Logger.Infof("Published message with ID: %s", id)
+
 		}
-		defer pubsubClient.Close()
-
-		// Get the Pub/Sub topic
-		topic := pubsubClient.Topic(topicName)
-
-		// Create an instance of VerificationMessage with the necessary data
-		vMessage := VerificationMessage{
-			Email:             user.Username,
-			VerificationToken: verMsg.VerificationToken,
-		}
-
-		// Marshal the VerificationMessage into JSON
-		jsonData, err := json.Marshal(vMessage)
-		if err != nil {
-			logger.Logger.Errorf("Error marshaling verification message: %v", err)
-			c.Status(http.StatusInternalServerError)
-			return
-		}
-
-		// Prepare and publish the message with jsonData
-		msg := &pubsub.Message{
-			Data: jsonData,
-			Attributes: map[string]string{
-				"email": user.Username,
-			},
-		}
-
-		// // Prepare and publish the message
-		// msg := &pubsub.Message{
-		// 	Data: []byte("Verification token: " + user.VerificationToken.String()),
-		// 	Attributes: map[string]string{
-		// 		"email": user.Username,
-		// 	},
-		// }
-		result := topic.Publish(ctx, msg)
-
-		// Wait for the result
-		id, err := result.Get(ctx)
-		if err != nil {
-			logger.Logger.Errorf("Failed to publish to Pub/Sub: %v", err)
-			c.Status(http.StatusInternalServerError)
-			return
-		}
-		logger.Logger.Infof("Published message with ID: %s", id)
 
 		// // After inserting the user, publish a message to the Pub/Sub topic
 		// ctx := context.Background()
