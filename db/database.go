@@ -23,7 +23,14 @@ func ConnectToDB(DSN string) (*gorm.DB, error) {
 	err = db.AutoMigrate(&user.UserModel{})
 	if err != nil {
 		// fmt.Println("Failed to migrate table schema")
-		logger.Logger.Error("ConnectToDB() - Failed to migrate table schema")
+		logger.Logger.Error("ConnectToDB() - Failed to migrate UserModel table schema")
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&user.EmailVerification{})
+	if err != nil {
+		// fmt.Println("Failed to migrate table schema")
+		logger.Logger.Error("ConnectToDB() - Failed to migrate EmailVerification table schema")
 		return nil, err
 	}
 	return db, err
