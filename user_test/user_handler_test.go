@@ -90,6 +90,9 @@ func TestCreateAndGetUser(t *testing.T) {
 		t.Fatalf("Expected status code %d, got %d for valid user creation", http.StatusCreated, w.Code)
 	}
 
+	//bypass email verification in TEST
+	db.Model(&user.UserModel{}).Where("username = ?", "john.doe@example.com").Update("is_verified", true)
+
 	// Test 2: Get user details with valid authentication
 	req, _ = http.NewRequest("GET", "/v1/user/self", nil)
 	req.Header.Set("Authorization", "Basic "+basicAuth("john.doe@example.com", "password123"))
@@ -130,6 +133,9 @@ func TestUpdateAndGetUser(t *testing.T) {
 	defer func() {
 		db.Where("username = ?", "john.update@example.com").Delete(&user.UserModel{})
 	}()
+
+	// After creating the user, before making any requests that require verification
+	db.Model(&user.UserModel{}).Where("username = ?", "john.update@example.com").Update("is_verified", true)
 
 	// Step 2: Update the user's details through an HTTP request
 	updatedUserData := map[string]string{

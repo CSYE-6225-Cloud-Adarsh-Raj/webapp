@@ -62,6 +62,7 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 		nonAuthEndpoints := map[string]bool{
 			"/healthz": true,
 			"/v1/user": true,
+			"/verify":  true,
 		}
 
 		if nonAuthEndpoints[path] && authHeader != "" {
@@ -75,6 +76,7 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 			"/healthz":      {"GET"},
 			"/v1/user":      {"POST"},
 			"/v1/user/self": {"GET", "PUT"},
+			"/verify":       {"GET"},
 		}
 
 		if methods, exists := allowedMethods[path]; exists {
@@ -99,13 +101,28 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	//Create User
 	r.POST("/v1/user", user.CreateUserHandler(db))
 
+	//Verify User
+	r.GET("/verify", user.VerifyUserHandler(db))
+
+	// authGroup := r.Group("/")
+	// authGroup.Use(AuthenticationMiddleware(db))
+	// {
+	// 	//Get User
+	// 	authGroup.GET("/v1/user/self", user.GetUserDetails(db))
+	// 	//Update user
+	// 	authGroup.PUT("/v1/user/self", user.UpdateUserHandler(db))
+	// }
+
 	authGroup := r.Group("/")
 	authGroup.Use(AuthenticationMiddleware(db))
 	{
-		//Get User
-		authGroup.GET("/v1/user/self", user.GetUserDetails(db))
-		//Update user
-		authGroup.PUT("/v1/user/self", user.UpdateUserHandler(db))
+		// Routes that also require email verification
+		verifiedGroup := authGroup.Group("/")
+		verifiedGroup.Use(EmailVerificationMiddleware(db))
+		{
+			verifiedGroup.GET("/v1/user/self", user.GetUserDetails(db))
+			verifiedGroup.PUT("/v1/user/self", user.UpdateUserHandler(db))
+		}
 	}
 
 	r.NoRoute(func(c *gin.Context) {
@@ -113,4 +130,30 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	})
 
 	return r
+}
+
+func EmailVerificationMiddleware(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, exists := c.Get("userID")
+		if !exists {
+			logger.Logger.Error("EmailVerificationMiddleware() - User ID not found in context")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+
+		var user user.UserModel
+		if err := db.First(&user, "id = ?", userID).Error; err != nil {
+			logger.Logger.Error("EmailVerificationMiddleware() - Failed to retrieve user")
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+			return
+		}
+
+		if !user.IsVerified {
+			logger.Logger.Error("EmailVerificationMiddleware() - User's email address is not verified")
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Email address is not verified"})
+			return
+		}
+
+		c.Next()
+	}
 }

@@ -1,7 +1,10 @@
 package user
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -17,16 +20,34 @@ import (
 
 	// "github.com/sirupsen/logrus"
 	"webapp/logger"
+
+	"cloud.google.com/go/pubsub"
 )
 
+var projectID = "csye6225-dev-414220"
+var topicName = "verify_email"
+
 type UserModel struct {
-	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"-"`
-	CreatedAt time.Time `json:"-" readOnly:"true"`
-	UpdatedAt time.Time `json:"-" readOnly:"true"`
-	FirstName string    `json:"first_name" validate:"required"`
-	LastName  string    `json:"last_name" validate:"required"`
-	Password  string    `json:"password" validate:"required" writeOnly:"true"`
-	Username  string    `json:"username" validate:"required,email"`
+	ID         uuid.UUID `gorm:"type:uuid;primaryKey" json:"-"`
+	CreatedAt  time.Time `json:"-" readOnly:"true"`
+	UpdatedAt  time.Time `json:"-" readOnly:"true"`
+	FirstName  string    `json:"first_name" validate:"required"`
+	LastName   string    `json:"last_name" validate:"required"`
+	Password   string    `json:"password" validate:"required" writeOnly:"true"`
+	Username   string    `json:"username" validate:"required,email"`
+	IsVerified bool      `json:"is_verified" gorm:"default:false"`
+	// VerificationToken uuid.UUID `json:"verificationToken"`
+}
+
+type VerificationMessage struct {
+	Email             string    `json:"email"`
+	VerificationToken uuid.UUID `json:"verificationToken"`
+}
+
+type EmailVerification struct {
+	Email    string    `gorm:"primaryKey;type:varchar(100)"`
+	UUID     uuid.UUID `gorm:"type:uuid;unique"`
+	TimeSent time.Time
 }
 
 // HashPassword hashes the user's password.
@@ -58,6 +79,11 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		user.ID = uuid.New()
+		user.IsVerified = false
+
+		var verMsg VerificationMessage
+		// user.VerificationToken = user.ID
+		verMsg.VerificationToken = user.ID
 
 		if strings.Contains(user.Username, ":") {
 			// fmt.Println("CreateUserHandler() -Error: Username cannot contain ':' ")
@@ -93,6 +119,89 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
+
+		// Initialize Pub/Sub client
+		ctx := context.Background()
+		if os.Getenv("SKIP_PUBSUB") != "true" {
+			pubsubClient, err := pubsub.NewClient(ctx, projectID)
+			if err != nil {
+				logger.Logger.Errorf("Failed to create Pub/Sub client: %v", err)
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+			defer pubsubClient.Close()
+
+			// Get the Pub/Sub topic
+			topic := pubsubClient.Topic(topicName)
+
+			// Create an instance of VerificationMessage with the necessary data
+			vMessage := VerificationMessage{
+				Email:             user.Username,
+				VerificationToken: verMsg.VerificationToken,
+			}
+
+			// Marshal the VerificationMessage into JSON
+			jsonData, err := json.Marshal(vMessage)
+			if err != nil {
+				logger.Logger.Errorf("Error marshaling verification message: %v", err)
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+
+			// Prepare and publish the message with jsonData
+			msg := &pubsub.Message{
+				Data: jsonData,
+				Attributes: map[string]string{
+					"email": user.Username,
+				},
+			}
+
+			// // Prepare and publish the message
+			// msg := &pubsub.Message{
+			// 	Data: []byte("Verification token: " + user.VerificationToken.String()),
+			// 	Attributes: map[string]string{
+			// 		"email": user.Username,
+			// 	},
+			// }
+			result := topic.Publish(ctx, msg)
+
+			// Wait for the result
+			id, err := result.Get(ctx)
+			if err != nil {
+				logger.Logger.Errorf("Failed to publish to Pub/Sub: %v", err)
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+			logger.Logger.Infof("Published message with ID: %s", id)
+
+		}
+
+		// // After inserting the user, publish a message to the Pub/Sub topic
+		// ctx := context.Background()
+		// topic := pubsubClient.Topic(topicID)
+		// defer topic.Stop()
+
+		// // Prepare the message
+		// msg := &pubsub.Message{
+		// 	Data: []byte("Verification token: " + user.VerificationToken),
+		// 	Attributes: map[string]string{
+		// 		"email": user.Username,
+		// 	},
+		// }
+
+		// // Publish the message
+		// result := topic.Publish(ctx, msg)
+
+		// // Block until the result is returned and a server-generated
+		// // ID is returned for the published message
+		// id, err := result.Get(ctx)
+		// if err != nil {
+		// 	logger.Logger.Errorf("CreateUserHandler() - Failed to publish to Pub/Sub: %v", err)
+		// 	c.Status(http.StatusInternalServerError)
+		// 	return
+		// }
+
+		// logger.Logger.Infof("CreateUserHandler() - Published message with ID: %s", id)
 
 		createdAtFormatted := user.CreatedAt.UTC().Format(time.RFC3339Nano)
 		createdAtFormatted = strings.Replace(createdAtFormatted, "+00:00", "Z", 1)
@@ -278,5 +387,48 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 		// fmt.Println("UpdateUserHandler() - User details updated successfully")
 		logger.Logger.Info("UpdateUserHandler() - User details updated successfully")
 		c.Status(http.StatusNoContent)
+	}
+}
+
+func VerifyUserHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenParam := c.Query("token")
+		if tokenParam == "" {
+			logger.Logger.Error("VerifyUserHandler() - Missing token")
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		token, err := uuid.Parse(tokenParam)
+		if err != nil {
+			logger.Logger.Error("VerifyUserHandler() - Invalid token format")
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		var user UserModel
+		if err := db.Where("verification_token = ?", token).First(&user).Error; err != nil {
+			logger.Logger.Error("VerifyUserHandler() - Token not found")
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		// Check if the request is within 2 minutes of the user's creation time
+		if time.Since(user.CreatedAt) > 2*time.Minute {
+			logger.Logger.Error("VerifyUserHandler() - Verification link expired")
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		// Update the isVerified flag
+		user.IsVerified = true
+		if err := db.Save(&user).Error; err != nil {
+			logger.Logger.Error("VerifyUserHandler() - Failed to verify user")
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		logger.Logger.Info("User verified successfully")
+		c.JSON(http.StatusOK, gin.H{"message": "User verified successfully"})
 	}
 }
