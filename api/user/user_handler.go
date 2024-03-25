@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -392,6 +393,8 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 
 func VerifyUserHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		fmt.Println("Control in VerifyUserHandler")
+		logger.Logger.Info("Control in VerifyUserHandler")
 		tokenParam := c.Query("token")
 		if tokenParam == "" {
 			logger.Logger.Error("VerifyUserHandler() - Missing token")
@@ -407,8 +410,8 @@ func VerifyUserHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		var user UserModel
-		if err := db.Where("verification_token = ?", token).First(&user).Error; err != nil {
-			logger.Logger.Error("VerifyUserHandler() - Token not found")
+		if err := db.Where("id = ?", token).First(&user).Error; err != nil {
+			logger.Logger.Error("VerifyUserHandler() - ID not found")
 			c.Status(http.StatusNotFound)
 			return
 		}
