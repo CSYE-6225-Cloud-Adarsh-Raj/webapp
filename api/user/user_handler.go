@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -366,8 +365,6 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 
 func VerifyUserHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("Control in VerifyUserHandler")
-		logger.Logger.Info("Control in VerifyUserHandler")
 		tokenParam := c.Query("token")
 		if tokenParam == "" {
 			logger.Logger.Error("VerifyUserHandler() - Missing token")
@@ -389,18 +386,36 @@ func VerifyUserHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Check if the request is within 2 minutes of the user's creation time
-		if time.Since(user.CreatedAt) > 2*time.Minute {
+		// // Check if the request is within 2 minutes of the user's creation time
+		// if time.Since(user.CreatedAt) > 2*time.Minute {
+		// 	logger.Logger.Error("VerifyUserHandler() - Verification link expired")
+		// 	c.Status(http.StatusBadRequest)
+		// 	return
+		// }
+
+		// Fetch the EmailVerification record associated with the user
+		var emailVerification EmailVerification
+		if err := db.Where("uuid = ?", user.ID).First(&emailVerification).Error; err != nil {
+			logger.Logger.Error("VerifyUserHandler() - Failed to retrieve email verification details")
+			c.Status(http.StatusUnauthorized)
+			return
+		}
+
+		// Check if the request is within 2 minutes of the email's TimeSent
+		if time.Since(emailVerification.TimeSent) > 2*time.Minute {
 			logger.Logger.Error("VerifyUserHandler() - Verification link expired")
 			c.Status(http.StatusBadRequest)
 			return
 		}
 
+		logger.Logger.Info("VerifyUserHandler() -", emailVerification.TimeSent)
+		logger.Logger.Debug("VerifyUserHandler() -", 2*time.Minute)
+
 		// Update the isVerified flag
 		user.IsVerified = true
 		if err := db.Save(&user).Error; err != nil {
 			logger.Logger.Error("VerifyUserHandler() - Failed to verify user")
-			c.Status(http.StatusInternalServerError)
+			c.Status(http.StatusUnauthorized)
 			return
 		}
 
