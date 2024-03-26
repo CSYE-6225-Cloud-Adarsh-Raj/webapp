@@ -104,15 +104,6 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	//Verify User
 	r.GET("/verify", user.VerifyUserHandler(db))
 
-	// authGroup := r.Group("/")
-	// authGroup.Use(AuthenticationMiddleware(db))
-	// {
-	// 	//Get User
-	// 	authGroup.GET("/v1/user/self", user.GetUserDetails(db))
-	// 	//Update user
-	// 	authGroup.PUT("/v1/user/self", user.UpdateUserHandler(db))
-	// }
-
 	authGroup := r.Group("/")
 	authGroup.Use(AuthenticationMiddleware(db))
 	{
@@ -144,7 +135,7 @@ func EmailVerificationMiddleware(db *gorm.DB) gin.HandlerFunc {
 		var user user.UserModel
 		if err := db.First(&user, "id = ?", userID).Error; err != nil {
 			logger.Logger.Error("EmailVerificationMiddleware() - Failed to retrieve user")
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
 			return
 		}
 

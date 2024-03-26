@@ -8,18 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"webapp/logger"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-
-	// "github.com/googleapis/google-cloud-go/logging"
-	// "cloud.google.com/go/logging"
-
-	// "github.com/sirupsen/logrus"
-	"webapp/logger"
 
 	"cloud.google.com/go/pubsub"
 )
@@ -36,7 +32,6 @@ type UserModel struct {
 	Password   string    `json:"password" validate:"required" writeOnly:"true"`
 	Username   string    `json:"username" validate:"required,email"`
 	IsVerified bool      `json:"is_verified" gorm:"default:false"`
-	// VerificationToken uuid.UUID `json:"verificationToken"`
 }
 
 type VerificationMessage struct {
@@ -171,13 +166,6 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 				},
 			}
 
-			// // Prepare and publish the message
-			// msg := &pubsub.Message{
-			// 	Data: []byte("Verification token: " + user.VerificationToken.String()),
-			// 	Attributes: map[string]string{
-			// 		"email": user.Username,
-			// 	},
-			// }
 			result := topic.Publish(ctx, msg)
 
 			// Wait for the result
@@ -199,6 +187,9 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			"account_created": createdAtFormatted,
 			"account_updated": updatedAtformatted,
 		})
+
+		logger.Logger.Debug("Completed Execution of CreateUserHandler")
+
 	}
 }
 
@@ -252,6 +243,7 @@ func GetUserDetails(db *gorm.DB) gin.HandlerFunc {
 			"account_created": createdAtFormatted,
 			"account_updated": updatedAtformatted,
 		})
+		logger.Logger.Debug("Completed Execution of GetUserDetails")
 	}
 }
 
@@ -360,6 +352,7 @@ func UpdateUserHandler(db *gorm.DB) gin.HandlerFunc {
 		// fmt.Println("UpdateUserHandler() - User details updated successfully")
 		logger.Logger.Info("UpdateUserHandler() - User details updated successfully")
 		c.Status(http.StatusNoContent)
+		logger.Logger.Debug("Completed Execution of UpdateUserHandler")
 	}
 }
 
@@ -408,9 +401,6 @@ func VerifyUserHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		logger.Logger.Info("VerifyUserHandler() -", emailVerification.TimeSent)
-		logger.Logger.Debug("VerifyUserHandler() -", 2*time.Minute)
-
 		// Update the isVerified flag
 		user.IsVerified = true
 		if err := db.Save(&user).Error; err != nil {
@@ -421,5 +411,7 @@ func VerifyUserHandler(db *gorm.DB) gin.HandlerFunc {
 
 		logger.Logger.Info("User verified successfully")
 		c.JSON(http.StatusOK, gin.H{"message": "User verified successfully"})
+
+		logger.Logger.Debug("Completed Execution of VerifyUserHandler")
 	}
 }

@@ -10,15 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp'
-    # services:
-    #   postgres:
-    #     image: postgres:16
-    #     env:
-    #       POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-    #       POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-    #       POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
-    #     ports:
-    #       - 5432:5432
 
     steps:
     - name: Setup Postgres

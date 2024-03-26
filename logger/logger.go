@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// CustomJSONFormatter extends logrus.JSONFormatter
 type CustomJSONFormatter struct {
 	logrus.JSONFormatter
 }
@@ -24,11 +23,9 @@ func (f *CustomJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	formattedString := string(originalFormatted)
 	if strings.Contains(formattedString, "+00:00") {
-		Logger.Debug("Control in if")
 		formattedString = strings.Replace(formattedString, "+00:00", "Z", 1)
 	} else {
 		formattedString = strings.Replace(formattedString, "-04:00", "Z", 1)
-		Logger.Debug("Control in else")
 	}
 
 	return []byte(formattedString), nil
@@ -42,6 +39,7 @@ func init() {
 			TimestampFormat: time.RFC3339Nano,
 		},
 	}
+	Logger.SetLevel(logrus.DebugLevel)
 
 	file, err := os.OpenFile("/var/log/webapp/webapp.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
