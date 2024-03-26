@@ -24,9 +24,11 @@ func (f *CustomJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	formattedString := string(originalFormatted)
 	if strings.Contains(formattedString, "+00:00") {
+		Logger.Debug("Control in if")
 		formattedString = strings.Replace(formattedString, "+00:00", "Z", 1)
 	} else {
-		formattedString = strings.TrimSuffix(formattedString, "-04:00") + "Z"
+		formattedString = strings.Replace(formattedString, "-04:00", "Z", 1)
+		Logger.Debug("Control in else")
 	}
 
 	return []byte(formattedString), nil
