@@ -121,6 +121,21 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		createdAtFormatted := user.CreatedAt.UTC().Format(time.RFC3339Nano)
+		createdAtFormatted = strings.Replace(createdAtFormatted, "+00:00", "Z", 1)
+
+		updatedAtformatted := user.UpdatedAt.UTC().Format(time.RFC3339Nano)
+		updatedAtformatted = strings.Replace(updatedAtformatted, "+00:00", "Z", 1)
+
+		logger.Logger.WithFields(logrus.Fields{
+			"id":              user.ID,
+			"first_name":      user.FirstName,
+			"last_name":       user.LastName,
+			"username":        user.Username,
+			"account_created": createdAtFormatted,
+			"account_updated": updatedAtformatted,
+		}).Info("User created successfully")
+
 		// Initialize Pub/Sub client
 		ctx := context.Background()
 		if os.Getenv("SKIP_PUBSUB") != "true" {
@@ -176,48 +191,6 @@ func CreateUserHandler(db *gorm.DB) gin.HandlerFunc {
 			logger.Logger.Infof("Published message with ID: %s", id)
 
 		}
-
-		// // After inserting the user, publish a message to the Pub/Sub topic
-		// ctx := context.Background()
-		// topic := pubsubClient.Topic(topicID)
-		// defer topic.Stop()
-
-		// // Prepare the message
-		// msg := &pubsub.Message{
-		// 	Data: []byte("Verification token: " + user.VerificationToken),
-		// 	Attributes: map[string]string{
-		// 		"email": user.Username,
-		// 	},
-		// }
-
-		// // Publish the message
-		// result := topic.Publish(ctx, msg)
-
-		// // Block until the result is returned and a server-generated
-		// // ID is returned for the published message
-		// id, err := result.Get(ctx)
-		// if err != nil {
-		// 	logger.Logger.Errorf("CreateUserHandler() - Failed to publish to Pub/Sub: %v", err)
-		// 	c.Status(http.StatusInternalServerError)
-		// 	return
-		// }
-
-		// logger.Logger.Infof("CreateUserHandler() - Published message with ID: %s", id)
-
-		createdAtFormatted := user.CreatedAt.UTC().Format(time.RFC3339Nano)
-		createdAtFormatted = strings.Replace(createdAtFormatted, "+00:00", "Z", 1)
-
-		updatedAtformatted := user.UpdatedAt.UTC().Format(time.RFC3339Nano)
-		updatedAtformatted = strings.Replace(updatedAtformatted, "+00:00", "Z", 1)
-
-		logger.Logger.WithFields(logrus.Fields{
-			"id":              user.ID,
-			"first_name":      user.FirstName,
-			"last_name":       user.LastName,
-			"username":        user.Username,
-			"account_created": createdAtFormatted,
-			"account_updated": updatedAtformatted,
-		}).Info("User created successfully")
 
 		c.JSON(http.StatusCreated, gin.H{
 			"id":              user.ID,
