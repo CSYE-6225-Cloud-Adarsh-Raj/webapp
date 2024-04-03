@@ -40,9 +40,9 @@ type VerificationMessage struct {
 }
 
 type EmailVerification struct {
-	Email    string    `gorm:"primaryKey;type:varchar(100)"`
-	UUID     uuid.UUID `gorm:"type:uuid;unique"`
-	TimeSent time.Time
+	Email      string    `gorm:"primaryKey;type:varchar(100)"`
+	UUID       uuid.UUID `gorm:"type:uuid;unique"`
+	ExpiryTime time.Time
 }
 
 // HashPassword hashes the user's password.
@@ -394,8 +394,14 @@ func VerifyUserHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Check if the request is within 2 minutes of the email's TimeSent
-		if time.Since(emailVerification.TimeSent) > 2*time.Minute {
+		// // Check if the request is within 2 minutes of the email's TimeSent
+		// if time.Since(emailVerification.ExpiryTime) > 2*time.Minute {
+		// 	logger.Logger.Error("VerifyUserHandler() - Verification link expired")
+		// 	c.Status(http.StatusBadRequest)
+		// 	return
+		// }
+
+		if time.Now().After(emailVerification.ExpiryTime) {
 			logger.Logger.Error("VerifyUserHandler() - Verification link expired")
 			c.Status(http.StatusBadRequest)
 			return
