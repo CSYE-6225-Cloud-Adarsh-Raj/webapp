@@ -108,6 +108,10 @@ jobs:
       env:
         BINARY_PATH: ../artifact/webapp
 
+
+    - name: Display packer_output.txt content
+      run: cat packer_output.txt
+      
     - name: Extract image name
       run: |
         IMAGE_NAME=$(grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image' packer_output.txt)
