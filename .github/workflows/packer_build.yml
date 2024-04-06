@@ -85,22 +85,45 @@ jobs:
       working-directory: ./custom_image
 
 
+    # - name: Run Packer to build the image
+    #   run: |
+    #     # packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl
+    #     # IMAGE_NAME=$(packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | grep 'A relevant grep to find your image name')
+    #     # IMAGE_NAME=$(packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image')
+    #     # echo "PACKER_IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+    #     # echo "::set-output name=PACKER_IMAGE_NAME::$IMAGE_NAME"
+    #     IMAGE_NAME=$(packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | tee /dev/tty | grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image')
+    #     if [ -z "$IMAGE_NAME" ]; then
+    #       echo "Failed to extract image name from Packer output."
+    #       exit 1
+    #     fi
+    #   working-directory: ./custom_image
+    #   env:
+    #     BINARY_PATH: ../artifact/webapp
+
     - name: Run Packer to build the image
       run: |
-        # packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl
-        # IMAGE_NAME=$(packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | grep 'A relevant grep to find your image name')
-        IMAGE_NAME=$(packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image')
-        echo "PACKER_IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-        echo "::set-output name=PACKER_IMAGE_NAME::$IMAGE_NAME"
+        packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | tee packer_output.txt
       working-directory: ./custom_image
       env:
         BINARY_PATH: ../artifact/webapp
+
+    - name: Extract image name
+      run: |
+        IMAGE_NAME=$(grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image' packer_output.txt)
+        if [ -z "$IMAGE_NAME" ]; then
+          echo "Failed to extract image name from Packer output."
+          exit 1
+        fi
+        echo "PACKER_IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+        echo "::set-output name=PACKER_IMAGE_NAME::$IMAGE_NAME"
+      working-directory: ./custom_image
 
     - name: Create a new instance template with the updated image
       env:
           INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
           REGION: ${{ secrets.REGION }}
-          # NEW_TEMPLATE_NAME: ${{ secrets.NEW_TEMPLATE_NAME}}
+          PACKER_IMAGE_NAME: ${{ secrets.CUSTOM_IMAGE_NAME }}
           EXISTING_TEMPLATE_NAME: ${{ secrets.OLD_TEMPLATE_NAME}}
       run: |
         NEW_TEMPLATE_NAME="webapp-template-$(date +%Y%m%d%H%M%S)"
