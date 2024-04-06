@@ -87,7 +87,53 @@ jobs:
 
     - name: Run Packer to build the image
       run: |
-        packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl
+        # packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl
+        # IMAGE_NAME=$(packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | grep 'A relevant grep to find your image name')
+        IMAGE_NAME=$(packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image')
+        echo "PACKER_IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+        echo "::set-output name=PACKER_IMAGE_NAME::$IMAGE_NAME"
       working-directory: ./custom_image
       env:
         BINARY_PATH: ../artifact/webapp
+
+    - name: Create a new instance template with the updated image
+      env:
+          INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+          REGION: ${{ secrets.REGION }}
+          # NEW_TEMPLATE_NAME: ${{ secrets.NEW_TEMPLATE_NAME}}
+          EXISTING_TEMPLATE_NAME: ${{ secrets.OLD_TEMPLATE_NAME}}
+      run: |
+        NEW_TEMPLATE_NAME="webapp-template-$(date +%Y%m%d%H%M%S)"
+        echo "Creating new instance template: $NEW_TEMPLATE_NAME"
+        gcloud compute instance-templates create ${NEW_TEMPLATE_NAME} \
+          --region=${REGION} \
+          --source-instance-template=${EXISTING_TEMPLATE_NAME} \
+          --image=${PACKER_IMAGE_NAME}
+
+    - name: Update the managed instance group to use the new template
+      env:
+        INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+        REGION: ${{ secrets.REGION }}
+      run: |
+        gcloud compute instance-groups managed set-instance-template ${INSTANCE_GROUP_NAME} \
+          --template=${NEW_TEMPLATE_NAME} \
+          --region=${REGION}
+
+    - name: Recreate instances in the managed instance group
+      env:
+          INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+      run: |
+        gcloud compute instance-groups managed rolling-action start-update ${INSTANCE_GROUP_NAME} \
+          --version template=${NEW_TEMPLATE_NAME} \
+          --region=${REGION} \
+          --type=proactive
+
+    - name: Poll for the update operation status
+      run: |
+        STATUS="RUNNING"
+        while [ "$STATUS" = "RUNNING" ]; do
+          STATUS=$(gcloud compute operations list --filter="operationType=update AND targetLink:${INSTANCE_GROUP_NAME} AND status=RUNNING" --format="value(status)" --limit=1)
+          echo "Current status: $STATUS"
+          sleep 10
+        done
+
