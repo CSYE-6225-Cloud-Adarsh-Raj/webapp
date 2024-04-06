@@ -101,16 +101,29 @@ jobs:
     #   env:
     #     BINARY_PATH: ../artifact/webapp
 
+    - name: Create dummy packer output file
+      run: |
+        touch ./packer_output.txt
+      working-directory: ./custom_image
+
+    - name: Debug current working directory 1
+      run: |
+        pwd
+
     - name: Run Packer to build the image
       run: |
         packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | tee packer_output.txt
       working-directory: ./custom_image
       env:
         BINARY_PATH: ../artifact/webapp
-
+    
+    - name: Debug current working directory 2
+      run: |
+        pwd
 
     - name: Display packer_output.txt content
       run: cat packer_output.txt
+      working-directory: ./custom_image
       
     - name: Extract image name
       run: |
