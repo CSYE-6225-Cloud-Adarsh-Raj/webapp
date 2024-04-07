@@ -138,36 +138,76 @@ jobs:
         echo "PACKER_IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
         echo "::set-output name=PACKER_IMAGE_NAME::$IMAGE_NAME"
       working-directory: ./custom_image
-
-    - name: Create a new instance template with the updated image
-      env:
-          INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
-          REGION: ${{ secrets.REGION }}
-          PACKER_IMAGE_NAME: ${{ secrets.CUSTOM_IMAGE_NAME }}
-          EXISTING_TEMPLATE_NAME: ${{ secrets.OLD_TEMPLATE_NAME}}
+    
+    - name: Describe the managed instance group
+      id: describe_instance_group
       run: |
-        NEW_TEMPLATE_NAME="webapp-template-$(date +%Y%m%d%H%M%S)"
-        echo "Creating new instance template: $NEW_TEMPLATE_NAME"
-        gcloud compute instance-templates create ${NEW_TEMPLATE_NAME} \
-          --region=${REGION} \
-          --source-instance-template=${EXISTING_TEMPLATE_NAME} \
-          --image=${PACKER_IMAGE_NAME}
+        OUTPUT=$(gcloud compute instance-groups managed describe $INSTANCE_GROUP_NAME --region $REGION --format="value(versions[0].instanceTemplate)")
+        echo "Instance template URL: $OUTPUT"
+        echo "::set-output name=instance_template_url::$OUTPUT"
+      env:
+        # GCP_PROJECT: csye6225-dev-414220
+        REGION: us-east1
+        INSTANCE_GROUP_NAME: webapp-group
+
+    - name: Describe the instance template
+      run: |
+        INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
+        gcloud compute instance-templates describe $INSTANCE_TEMPLATE_URL --format=json > existing_template_config.json
+        ls -alrt
+        pwd
+        chmod +x existing_template_config.json
+      working-directory: ./custom_image
+
+    - name: Set executable permission for create template script
+      run: |
+        ls -alrt
+        pwd
+        chmod +x create_new_template.sh
+      working-directory: ./custom_image
+
+    - name: Execute gcloud create instance script
+      run: |
+        ls -alrt
+        pwd
+        ./create_new_template.sh
+      working-directory: ./custom_image
+      env:
+        PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
+
+    # - name: Create a new instance template with the updated image
+    #   env:
+    #       INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+    #       REGION: ${{ secrets.REGION }}
+    #       # PACKER_IMAGE_NAME: ${{ secrets.CUSTOM_IMAGE_NAME }}
+    #       PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
+    #       EXISTING_TEMPLATE_NAME: ${{ secrets.OLD_TEMPLATE_NAME}}
+    #   run: |
+    #     NEW_TEMPLATE_NAME="webapp-template-$(date +%Y%m%d%H%M%S)"
+    #     echo "Creating new instance template: $NEW_TEMPLATE_NAME"
+    #     gcloud compute instance-templates create ${NEW_TEMPLATE_NAME} \
+    #       --region=${REGION} \
+    #       --source-instance-template=${EXISTING_TEMPLATE_NAME} \
+    #       --image=${PACKER_IMAGE_NAME}
 
     - name: Update the managed instance group to use the new template
       env:
         INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
         REGION: ${{ secrets.REGION }}
+        INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
       run: |
         gcloud compute instance-groups managed set-instance-template ${INSTANCE_GROUP_NAME} \
-          --template=${NEW_TEMPLATE_NAME} \
+          --template=${INSTANCE_TEMPLATE_URL} \
           --region=${REGION}
 
     - name: Recreate instances in the managed instance group
       env:
           INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+          INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
+          REGION: ${{ secrets.REGION }}
       run: |
         gcloud compute instance-groups managed rolling-action start-update ${INSTANCE_GROUP_NAME} \
-          --version template=${NEW_TEMPLATE_NAME} \
+          --version template=${INSTANCE_TEMPLATE_URL} \
           --region=${REGION} \
           --type=proactive
 
