@@ -45,7 +45,7 @@ GCLOUD_CMD="gcloud compute instance-templates create webapp-template-$(date +%Y%
     --network-interface=network=$NETWORK,subnet=$SUBNET \
     --instance-template-region=$REGION \
     --tags=$TAGS \
-    --no-address \
+    --address="" \
     --metadata-from-file=startup-script=startup-script.sh \
     --service-account=$SERVICE_ACCOUNT_EMAIL \
     --scopes=$SCOPES"

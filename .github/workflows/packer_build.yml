@@ -194,8 +194,8 @@ jobs:
       env:
         INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
         REGION: ${{ secrets.REGION }}
-        INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
       run: |
+        INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
         gcloud compute instance-groups managed set-instance-template ${INSTANCE_GROUP_NAME} \
           --template=${INSTANCE_TEMPLATE_URL} \
           --region=${REGION}
@@ -203,9 +203,9 @@ jobs:
     - name: Recreate instances in the managed instance group
       env:
           INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
-          INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
           REGION: ${{ secrets.REGION }}
       run: |
+        INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
         gcloud compute instance-groups managed rolling-action start-update ${INSTANCE_GROUP_NAME} \
           --version template=${INSTANCE_TEMPLATE_URL} \
           --region=${REGION} \
@@ -219,4 +219,3 @@ jobs:
           echo "Current status: $STATUS"
           sleep 10
         done
-
