@@ -127,7 +127,10 @@ jobs:
       
     - name: Extract image name
       run: |
-        IMAGE_NAME=$(grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image' packer_output.txt)
+        ls -alrt
+        pwd
+        # IMAGE_NAME=$(grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image' packer_output.txt)
+        IMAGE_NAME=$(grep -Eo 'webapp-golden-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}--image' packer_output.txt)
         if [ -z "$IMAGE_NAME" ]; then
           echo "Failed to extract image name from Packer output."
           exit 1
