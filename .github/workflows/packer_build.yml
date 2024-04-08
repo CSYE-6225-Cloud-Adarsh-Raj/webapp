@@ -173,7 +173,7 @@ jobs:
         pwd
         # ./create_new_template.sh
         OUTPUT_TEMP=$(./create_new_template.sh)
-        cho "New template created: $OUTPUT"
+        echo "New template created: $OUTPUT"
         echo "::set-output name=new_template_name::$OUTPUT_TEMP"
       working-directory: ./custom_image
       env:
