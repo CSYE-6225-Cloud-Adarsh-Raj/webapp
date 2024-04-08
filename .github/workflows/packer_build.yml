@@ -12,7 +12,7 @@ on:
     
 jobs:
   build-and-upload-binary:
-    if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
+    # if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -68,24 +68,24 @@ jobs:
     - name: Use gcloud CLI
       run: gcloud info
 
-    - name: Install Packer
-      run: |
-        curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
-        unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
-        sudo rm -f /usr/local/bin/packer
-        sudo mv /tmp/packer /usr/local/bin
-    - name: Debug current working directory packer build
-      run: |
-        pwd
-        ls -la
-    - name: List contents of the custom_image directory
-      run: ls -la
-      working-directory: ./custom_image
+    # - name: Install Packer
+    #   run: |
+    #     curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
+    #     unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
+    #     sudo rm -f /usr/local/bin/packer
+    #     sudo mv /tmp/packer /usr/local/bin
+    # - name: Debug current working directory packer build
+    #   run: |
+    #     pwd
+    #     ls -la
+    # - name: List contents of the custom_image directory
+    #   run: ls -la
+    #   working-directory: ./custom_image
 
-    - name: Packer init
-      run: |
-        packer init webapp_image.pkr.hcl
-      working-directory: ./custom_image
+    # - name: Packer init
+    #   run: |
+    #     packer init webapp_image.pkr.hcl
+    #   working-directory: ./custom_image
 
 
     # - name: Run Packer to build the image
