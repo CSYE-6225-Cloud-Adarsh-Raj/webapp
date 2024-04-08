@@ -1,11 +1,14 @@
 name: Packer Build
 
 on:
-  workflow_run:
-    workflows: ["Go Test"]
+  # workflow_run:
+  #   workflows: ["Go Test"]
+  #   branches: [ "main" ]
+  #   types:
+  #     - completed
+  pull_request:
     branches: [ "main" ]
-    types:
-      - completed
+
     
 jobs:
   build-and-upload-binary:
@@ -100,37 +103,38 @@ jobs:
     #   working-directory: ./custom_image
     #   env:
     #     BINARY_PATH: ../artifact/webapp
+    #uncomment later
+    # - name: Create dummy packer output file
+    #   run: |
+    #     touch ./packer_output.txt
+    #   working-directory: ./custom_image
 
-    - name: Create dummy packer output file
-      run: |
-        touch ./packer_output.txt
-      working-directory: ./custom_image
+    # - name: Debug current working directory 1
+    #   run: |
+    #     pwd
 
-    - name: Debug current working directory 1
-      run: |
-        pwd
-
-    - name: Run Packer to build the image
-      run: |
-        packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | tee packer_output.txt
-      working-directory: ./custom_image
-      env:
-        BINARY_PATH: ../artifact/webapp
+    # - name: Run Packer to build the image
+    #   run: |
+    #     packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | tee packer_output.txt
+    #   working-directory: ./custom_image
+    #   env:
+    #     BINARY_PATH: ../artifact/webapp
     
-    - name: Debug current working directory 2
-      run: |
-        pwd
+    # - name: Debug current working directory 2
+    #   run: |
+    #     pwd
 
-    - name: Display packer_output.txt content
-      run: cat packer_output.txt
-      working-directory: ./custom_image
+    # - name: Display packer_output.txt content
+    #   run: cat packer_output.txt
+    #   working-directory: ./custom_image
       
     - name: Extract image name
       run: |
         ls -alrt
         pwd
         # IMAGE_NAME=$(grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image' packer_output.txt)
-        IMAGE_NAME=$(grep -Eo 'webapp-golden-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}--image' packer_output.txt)
+        # IMAGE_NAME=$(grep -Eo 'webapp-golden-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}--image' packer_output.txt)
+        IMAGE_NAME="webapp-golden-2024-04-08-19-58-36--image"
         if [ -z "$IMAGE_NAME" ]; then
           echo "Failed to extract image name from Packer output."
           exit 1

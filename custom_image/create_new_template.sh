@@ -91,9 +91,14 @@ done
 
 
 # Update the managed instance group to use the new template
-gcloud compute instance-groups managed set-instance-template "$INSTANCE_GROUP_NAME" \
+# gcloud compute instance-groups managed set-instance-template "$INSTANCE_GROUP_NAME" \
+#   --template="$NEW_INSTANCE_TEMPLATE_URL" \
+#   --region="$REGION"
+
+#Update the managed instance group to use the new template
+gcloud compute instance-groups managed set-instance-template webapp-group \
   --template="$NEW_INSTANCE_TEMPLATE_URL" \
-  --region="$REGION"
+  --region=us-east1
 
 echo "Updated instance group ${INSTANCE_GROUP_NAME} to use new template: ${NEW_INSTANCE_TEMPLATE_URL}"
 
