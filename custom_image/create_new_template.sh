@@ -68,7 +68,7 @@ echo "New template created: $NEW_TEMPLATE_NAME"
 
 # Construct the new instance template URL
 NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/${NEW_IMAGE_PROJECT_ID}/regions/${REGION}/instanceTemplates/${NEW_TEMPLATE_NAME}"
-echo "NEW_INSTANCE_TEMPLATE_URL ${NEW_INSTANCE_TEMPLATE_URL} 
+echo "NEW_INSTANCE_TEMPLATE_URL ${NEW_INSTANCE_TEMPLATE_URL}"
 
 # Update the managed instance group to use the new template
 gcloud compute instance-groups managed set-instance-template "${INSTANCE_GROUP_NAME}" \
