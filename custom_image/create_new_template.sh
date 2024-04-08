@@ -60,13 +60,6 @@ eval "$GCLOUD_CMD"
 
 echo "New template created: $NEW_TEMPLATE_NAME"
 
-# Poll for existence
-while [[ $(gcloud compute instance-templates describe $NEW_TEMPLATE_NAME --format="get(name)" 2>&1) == *"ERROR"* ]]; do
-  echo "Waiting for instance template to be ready..."
-  sleep 10
-done
-
-
 
 # REGION="us-east1"
 # INSTANCE_GROUP_NAME="webapp-group" # Make sure to replace this with your actual instance group name
@@ -76,6 +69,26 @@ done
 # Construct the new instance template URL
 NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/${NEW_IMAGE_PROJECT_ID}/regions/${REGION}/instanceTemplates/${NEW_TEMPLATE_NAME}"
 echo "NEW_INSTANCE_TEMPLATE_URL ${NEW_INSTANCE_TEMPLATE_URL}"
+
+# output=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPLATE_URL --format="get(name)" 2>&1)
+# if [[ $output == *"ERROR"* ]]; then
+#   echo "An error occurred."
+# else
+#   echo "No error, output: $output"
+# fi
+
+TEMPLATE_READY="false"
+while [[ $TEMPLATE_READY == "false" ]]; do
+  output=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPLATE_URL --format="get(name)" 2>&1)
+    if [[ $output != *"ERROR"* ]]; then
+    echo "Instance template is ready: $output"
+    TEMPLATE_READY="true"
+  else
+    echo "Waiting for instance template to be ready..."
+    sleep 10  # Wait for 10 seconds before checking again
+  fi
+done
+
 
 # Update the managed instance group to use the new template
 gcloud compute instance-groups managed set-instance-template "${INSTANCE_GROUP_NAME}" \
