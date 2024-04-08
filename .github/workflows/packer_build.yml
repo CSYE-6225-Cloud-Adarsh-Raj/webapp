@@ -247,13 +247,34 @@ jobs:
     #       --region=${REGION} \
     #       --type=proactive
 
+    # - name: Poll for the update operation status
+    #   run: |
+    #     STATUS="RUNNING"
+    #     while [ "$STATUS" = "RUNNING" ]; do
+    #       STATUS=$(gcloud compute operations list --filter="operationType=update AND targetLink:${INSTANCE_GROUP_NAME} AND status=RUNNING" --format="value(status)" --limit=1)
+    #       echo "Current status: $STATUS"
+    #       sleep 10
+    #     done
+    #   env:
+    #     INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+
+    # - name: Poll for the update operation status
+    #   run: |
+    #     # STATUS="RUNNING"
+    #     # while [ "$STATUS" = "RUNNING" ]; do
+    #     #   STATUS=$(gcloud compute operations list --filter="operationType=update AND targetLink~${INSTANCE_GROUP_NAME} AND status=RUNNING" --format="value(status)" --limit=1)
+    #     #   echo "Current status: $STATUS"
+    #     #   sleep 10
+    #     # done
+    #     gcloud compute instance-groups managed wait-until --version-target-reached --timeout=180 --region=us-east1 webapp-group 
+      # env:
+      #   INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+
     - name: Poll for the update operation status
       run: |
-        STATUS="RUNNING"
-        while [ "$STATUS" = "RUNNING" ]; do
-          STATUS=$(gcloud compute operations list --filter="operationType=update AND targetLink:${INSTANCE_GROUP_NAME} AND status=RUNNING" --format="value(status)" --limit=1)
-          echo "Current status: $STATUS"
-          sleep 10
-        done
-      env:
-        INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+        if gcloud compute instance-groups managed wait-until --version-target-reached --timeout=180 --region=us-east1 webapp-group; then
+          echo "Version target reached successfully."
+        else
+          echo "Failed to reach version target within the timeout period."
+          exit 1
+        fi
