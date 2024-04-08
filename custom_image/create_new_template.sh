@@ -102,7 +102,12 @@ gcloud compute instance-groups managed set-instance-template webapp-group \
 
 echo "Updated instance group ${INSTANCE_GROUP_NAME} to use new template: ${NEW_INSTANCE_TEMPLATE_URL}"
 
-gcloud compute instance-groups managed rolling-action start-update "$INSTANCE_GROUP_NAME" \
+# gcloud compute instance-groups managed rolling-action start-update "$INSTANCE_GROUP_NAME" \
+#   --version=template="$NEW_INSTANCE_TEMPLATE_URL" \
+#   --region="$REGION" \
+#   --max-unavailable=0
+
+gcloud compute instance-groups managed rolling-action start-update webapp-group \
   --version=template="$NEW_INSTANCE_TEMPLATE_URL" \
-  --region="$REGION" \
+  --region=us-east1 \
   --max-unavailable=0
