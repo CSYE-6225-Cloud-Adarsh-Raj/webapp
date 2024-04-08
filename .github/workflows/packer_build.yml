@@ -272,7 +272,7 @@ jobs:
 
     - name: Poll for the update operation status
       run: |
-        if gcloud compute instance-groups managed wait-until --version-target-reached --timeout=180 --region=us-east1 webapp-group; then
+        if gcloud compute instance-groups managed wait-until --stable --region=us-east1 webapp-group; then
           echo "Version target reached successfully."
         else
           echo "Failed to reach version target within the timeout period."
