@@ -60,6 +60,13 @@ eval "$GCLOUD_CMD"
 
 echo "New template created: $NEW_TEMPLATE_NAME"
 
+# Poll for existence
+while [[ $(gcloud compute instance-templates describe $NEW_TEMPLATE_NAME --format="get(name)" 2>&1) == *"ERROR"* ]]; do
+  echo "Waiting for instance template to be ready..."
+  sleep 10
+done
+
+
 
 # REGION="us-east1"
 # INSTANCE_GROUP_NAME="webapp-group" # Make sure to replace this with your actual instance group name
