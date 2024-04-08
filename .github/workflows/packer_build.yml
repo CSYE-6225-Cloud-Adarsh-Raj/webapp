@@ -211,8 +211,16 @@ jobs:
         REGION: ${{ secrets.REGION }}
         #GCP_PROJECT: csye6225-dev-414220
       run: |
-        # NEW_INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.new_template_name }}"
-        NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${{ steps.create_instance_template.outputs.new_template_name }}"
+        # NEW_INSTANCE_TEMPLATE_URL="${{ steps.create_instance_template.outputs.new_template_name }}"
+        # NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${{ steps.create_instance_template.outputs.new_template_name }}"
+        # "${{ steps.describe_instance_group.outputs.instance_template_url }}"
+        # echo "NEW instance URL: $NEW_IN"
+
+        NEW_INSTANCE_TEMPLATE_NAME="${{ steps.create_instance_template.outputs.new_template_name }}"
+        NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${NEW_INSTANCE_TEMPLATE_NAME}"
+        
+        echo "New instance template URL: $NEW_INSTANCE_TEMPLATE_URL"
+        
         gcloud compute instance-groups managed set-instance-template ${INSTANCE_GROUP_NAME} \
           --template=${NEW_INSTANCE_TEMPLATE_URL} \
           --region=${REGION}
@@ -222,7 +230,11 @@ jobs:
           INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
           REGION: ${{ secrets.REGION }}
       run: |
-        NEW_INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.new_template_name }}"
+        # NEW_INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.new_template_name }}"
+        NEW_INSTANCE_TEMPLATE_NAME="${{ steps.create_instance_template.outputs.new_template_name }}"
+        NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${NEW_INSTANCE_TEMPLATE_NAME}"
+        
+        echo "New instance template URL: $NEW_INSTANCE_TEMPLATE_URL"
 
         gcloud compute instance-groups managed rolling-action start-update ${INSTANCE_GROUP_NAME} \
           --version template=${NEW_INSTANCE_TEMPLATE_URL} \
