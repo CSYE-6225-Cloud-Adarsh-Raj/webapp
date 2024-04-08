@@ -35,8 +35,9 @@ echo "$STARTUP_SCRIPT_VALUE" > startup-script.sh
 # Service account and scopes
 SERVICE_ACCOUNT_EMAIL=$(jq -r '.properties.serviceAccounts[0].email' "$CONFIG_JSON")
 SCOPES=$(jq -r '.properties.serviceAccounts[0].scopes | join(",")' "$CONFIG_JSON")
+NEW_TEMPLATE_NAME="webapp-template-$(date +%Y%m%d%H%M%S)"
 # Constructing the gcloud command
-GCLOUD_CMD="gcloud compute instance-templates create webapp-template-$(date +%Y%m%d%H%M%S) \
+GCLOUD_CMD="gcloud compute instance-templates create $NEW_TEMPLATE_NAME \
     --machine-type=$MACHINE_TYPE \
     --image=$NEW_IMAGE \
     --image-project=$NEW_IMAGE_PROJECT_ID \
@@ -56,4 +57,6 @@ echo "$GCLOUD_CMD"
 
 # Execute the constructed gcloud command
 eval "$GCLOUD_CMD"
+
+echo "New template created: $NEW_TEMPLATE_NAME"
 

@@ -167,10 +167,14 @@ jobs:
       working-directory: ./custom_image
 
     - name: Execute gcloud create instance script
+      id: create_instance_template
       run: |
         ls -alrt
         pwd
-        ./create_new_template.sh
+        # ./create_new_template.sh
+        OUTPUT_TEMP=$(./create_new_template.sh)
+        cho "New template created: $OUTPUT"
+        echo "::set-output name=new_template_name::$OUTPUT_TEMP"
       working-directory: ./custom_image
       env:
         PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
@@ -189,6 +193,17 @@ jobs:
     #       --region=${REGION} \
     #       --source-instance-template=${EXISTING_TEMPLATE_NAME} \
     #       --image=${PACKER_IMAGE_NAME}
+
+    # - name: Describe the managed instance group with new instance template
+    #   id: describe_instance_template
+    #   run: |
+    #     OUTPUT_TEMP=$(gcloud compute instance-groups managed describe $INSTANCE_GROUP_NAME --region $REGION --format="value(versions[0].instanceTemplate)")
+    #     echo "NEW Instance template URL: $OUTPUT_TEMP"
+    #     echo "::set-output name=instance_template_url::$OUTPUT_TEMP"
+    #   env:
+    #     # GCP_PROJECT: csye6225-dev-414220
+    #     REGION: us-east1
+    #     INSTANCE_GROUP_NAME: webapp-group
 
     - name: Update the managed instance group to use the new template
       env:
