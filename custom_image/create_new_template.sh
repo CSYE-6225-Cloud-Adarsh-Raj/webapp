@@ -60,3 +60,19 @@ eval "$GCLOUD_CMD"
 
 echo "New template created: $NEW_TEMPLATE_NAME"
 
+
+# REGION="us-east1"
+# INSTANCE_GROUP_NAME="webapp-group" # Make sure to replace this with your actual instance group name
+# INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+# The rest of your script up to the echo "New template created: $NEW_TEMPLATE_NAME"
+
+# Construct the new instance template URL
+NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/${NEW_IMAGE_PROJECT_ID}/regions/${REGION}/instanceTemplates/${NEW_TEMPLATE_NAME}"
+echo "NEW_INSTANCE_TEMPLATE_URL ${NEW_INSTANCE_TEMPLATE_URL} 
+
+# Update the managed instance group to use the new template
+gcloud compute instance-groups managed set-instance-template "${INSTANCE_GROUP_NAME}" \
+  --template="${NEW_INSTANCE_TEMPLATE_URL}" \
+  --region="${REGION}"
+
+echo "Updated instance group ${INSTANCE_GROUP_NAME} to use new template: ${NEW_INSTANCE_TEMPLATE_URL}"
