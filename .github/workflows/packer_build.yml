@@ -154,27 +154,27 @@ jobs:
       run: |
         INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
         gcloud compute instance-templates describe $INSTANCE_TEMPLATE_URL --format=json > existing_template_config.json
-        ls -alrt
-        pwd
+        # ls -alrt
+        # pwd
         chmod +x existing_template_config.json
       working-directory: ./custom_image
 
     - name: Set executable permission for create template script
       run: |
-        ls -alrt
-        pwd
+        # ls -alrt
+        # pwd
         chmod +x create_new_template.sh
       working-directory: ./custom_image
 
     - name: Execute gcloud create instance script
       id: create_instance_template
       run: |
-        ls -alrt
-        pwd
-        # ./create_new_template.sh
-        OUTPUT_TEMP=$(./create_new_template.sh)
-        echo "New template created: $OUTPUT"
-        echo "::set-output name=new_template_name::$OUTPUT_TEMP"
+        # ls -alrt
+        # pwd
+        ./create_new_template.sh
+        # OUTPUT_TEMP=$(./create_new_template.sh)
+        # echo "New template created: $OUTPUT"
+        # echo "::set-output name=new_template_name::$OUTPUT_TEMP"
       working-directory: ./custom_image
       env:
         PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
@@ -205,41 +205,43 @@ jobs:
     #     REGION: us-east1
     #     INSTANCE_GROUP_NAME: webapp-group
 
-    - name: Update the managed instance group to use the new template
-      env:
-        INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
-        REGION: ${{ secrets.REGION }}
-        #GCP_PROJECT: csye6225-dev-414220
-      run: |
-        # NEW_INSTANCE_TEMPLATE_URL="${{ steps.create_instance_template.outputs.new_template_name }}"
-        # NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${{ steps.create_instance_template.outputs.new_template_name }}"
-        # "${{ steps.describe_instance_group.outputs.instance_template_url }}"
-        # echo "NEW instance URL: $NEW_IN"
+    # - name: Update the managed instance group to use the new template
+    #   env:
+    #     INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+    #     REGION: ${{ secrets.REGION }}
+    #     #GCP_PROJECT: csye6225-dev-414220
+    #   run: |
+    #     # NEW_INSTANCE_TEMPLATE_URL="${{ steps.create_instance_template.outputs.new_template_name }}"
+    #     # NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${{ steps.create_instance_template.outputs.new_template_name }}"
+    #     # "${{ steps.describe_instance_group.outputs.instance_template_url }}"
+    #     # echo "NEW instance URL: $NEW_IN"
 
-        NEW_INSTANCE_TEMPLATE_NAME="${{ steps.create_instance_template.outputs.new_template_name }}"
-        NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${NEW_INSTANCE_TEMPLATE_NAME}"
+    #     NEW_INSTANCE_TEMPLATE_NAME="${{ steps.create_instance_template.outputs.new_template_name }}"
+    #     echo "Template name: $NEW_INSTANCE_TEMPLATE_NAME"
+    #     echo "Region: $REGION"
+    #     NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${NEW_INSTANCE_TEMPLATE_NAME}"
         
-        echo "New instance template URL: $NEW_INSTANCE_TEMPLATE_URL"
+    #     echo "New instance template URL: $NEW_INSTANCE_TEMPLATE_URL"
         
-        gcloud compute instance-groups managed set-instance-template ${INSTANCE_GROUP_NAME} \
-          --template=${NEW_INSTANCE_TEMPLATE_URL} \
-          --region=${REGION}
+    #     gcloud compute instance-groups managed set-instance-template ${INSTANCE_GROUP_NAME} \
+    #       --template=${NEW_INSTANCE_TEMPLATE_URL} \
+    #       --region=${REGION}
 
-    - name: Recreate instances in the managed instance group
-      env:
-          INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
-          REGION: ${{ secrets.REGION }}
-      run: |
-        # NEW_INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.new_template_name }}"
-        NEW_INSTANCE_TEMPLATE_NAME="${{ steps.create_instance_template.outputs.new_template_name }}"
-        NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${NEW_INSTANCE_TEMPLATE_NAME}"
+    # - name: Recreate instances in the managed instance group
+    #   env:
+    #       INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+    #       REGION: ${{ secrets.REGION }}
+    #   run: |
+    #     # NEW_INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.new_template_name }}"
+    #     NEW_INSTANCE_TEMPLATE_NAME="${{ steps.create_instance_template.outputs.new_template_name }}"
+    #     NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${NEW_INSTANCE_TEMPLATE_NAME}"
         
-        echo "New instance template URL: $NEW_INSTANCE_TEMPLATE_URL"
+    #     echo "New instance template URL: $NEW_INSTANCE_TEMPLATE_URL"
 
-        gcloud compute instance-groups managed rolling-action start-update ${INSTANCE_GROUP_NAME} \
-          --version template=${NEW_INSTANCE_TEMPLATE_URL} \
-          --region=${REGION} \
-          --type=proactive
+    #     gcloud compute instance-groups managed rolling-action start-update ${INSTANCE_GROUP_NAME} \
+    #       --version template=${NEW_INSTANCE_TEMPLATE_URL} \
+    #       --region=${REGION} \
+    #       --type=proactive
 
     - name: Poll for the update operation status
       run: |
@@ -249,3 +251,5 @@ jobs:
           echo "Current status: $STATUS"
           sleep 10
         done
+      env:
+        INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
