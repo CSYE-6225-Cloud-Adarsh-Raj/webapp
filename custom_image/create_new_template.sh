@@ -85,14 +85,19 @@ while [[ $TEMPLATE_READY == "false" ]]; do
     TEMPLATE_READY="true"
   else
     echo "Waiting for instance template to be ready..."
-    sleep 10  # Wait for 10 seconds before checking again
+    sleep 10
   fi
 done
 
 
 # Update the managed instance group to use the new template
-gcloud compute instance-groups managed set-instance-template "${INSTANCE_GROUP_NAME}" \
-  --template="${NEW_INSTANCE_TEMPLATE_URL}" \
-  --region="${REGION}"
+gcloud compute instance-groups managed set-instance-template "$INSTANCE_GROUP_NAME" \
+  --template="$NEW_INSTANCE_TEMPLATE_URL" \
+  --region="$REGION"
 
 echo "Updated instance group ${INSTANCE_GROUP_NAME} to use new template: ${NEW_INSTANCE_TEMPLATE_URL}"
+
+gcloud compute instance-groups managed rolling-action start-update "$INSTANCE_GROUP_NAME" \
+  --version=template="$NEW_INSTANCE_TEMPLATE_URL" \
+  --region="$REGION" \
+  --max-unavailable=0
