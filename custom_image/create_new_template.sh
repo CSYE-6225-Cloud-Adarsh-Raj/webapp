@@ -64,6 +64,7 @@ EOF
 NEW_INSTANCE_TEMPALTE="webapp-template-$(date +%Y%m%d%H%M%S)"
 # Constructing the gcloud command
 GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
+    --region=$REGION \
     --machine-type=$MACHINE_TYPE \
     # --image=$NEW_IMAGE \
     --image=webapp-golden-2024-04-08-19-58-36--image \
@@ -77,6 +78,7 @@ GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
     --address="" \
     --metadata-from-file=startup-script=startup-script.sh \
     --service-account=$SERVICE_ACCOUNT_EMAIL \
+    --project=$GCP_PROJECT_ID \
     --scopes=$SCOPES"
 
 echo "$GCLOUD_CMD"
