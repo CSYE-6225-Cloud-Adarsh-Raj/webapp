@@ -65,8 +65,10 @@ NEW_INSTANCE_TEMPALTE="webapp-template-$(date +%Y%m%d%H%M%S)"
 # Constructing the gcloud command
 GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
     --machine-type=$MACHINE_TYPE \
-    --image=$NEW_IMAGE \
-    --image-project=$GCP_PROJECT_ID \
+    # --image=$NEW_IMAGE \
+    --image=webapp-golden-***24-04-08-19-58-36--image \
+    # --image-project=$GCP_PROJECT_ID \
+    --image-project=csye6225-dev-414220 \
     --boot-disk-size=${DISK_SIZE_GB}GB \
     --boot-disk-type=$DISK_TYPE \
     --network-interface=network=$NETWORK,subnet=$SUBNET \
