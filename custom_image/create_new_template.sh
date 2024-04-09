@@ -69,9 +69,7 @@ NEW_INSTANCE_TEMPALTE="webapp-template-$(date +%Y%m%d%H%M%S)"
 GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
     --region=$REGION \
     --machine-type=$MACHINE_TYPE \
-    # --image=$NEW_IMAGE \
     --image=webapp-golden-2024-04-08-19-58-36--image \
-    # --image-project=$GCP_PROJECT_ID \
     --image-project=csye6225-dev-414220 \
     --boot-disk-size=${DISK_SIZE_GB}GB \
     --boot-disk-type=$DISK_TYPE \
@@ -81,7 +79,7 @@ GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
     --address="" \
     --metadata-from-file=startup-script=startup-script.sh \
     --service-account=$SERVICE_ACCOUNT_EMAIL \
-    --project=$GCP_PROJECT_ID \
+    --project=csye6225-dev-414220 \
     --scopes=$SCOPES"
 
 echo "$GCLOUD_CMD"
