@@ -4,29 +4,29 @@
 #CONFIG_JSON="existing_template_config.json"
 
 # Define new custom OS image (this should be set or passed into the script)
-NEW_IMAGE=$PACKER_IMAGE_NAME
+# NEW_IMAGE=$PACKER_IMAGE_NAME
 # GCP_PROJECT_ID=${{ vars.GCP_PROJECT_ID }}
-INSTANCE_GROUP_NAME=$INSTANCE_GROUP_NAME
+# INSTANCE_GROUP_NAME=$INSTANCE_GROUP_NAME
 
 # Extracting information from the JSON file
-MACHINE_TYPE=$REGION
-DISK_SIZE_GB=$DISK_SIZE_GB
-DISK_TYPE=$DISK_TYPE
+# MACHINE_TYPE=$MACHINE_TYPE
+# DISK_SIZE_GB=$DISK_SIZE_GB
+# DISK_TYPE=$DISK_TYPE
 #DISK_INTF_TYPE=$(jq -r '.properties.disks[0].interface' "$CONFIG_JSON")
 
 #NETWORK=$(jq -r '.properties.networkInterfaces[0].network' "$CONFIG_JSON" | awk -F'/' '{print $NF}')
 #SUBNET=$(jq -r '.properties.networkInterfaces[0].subnetwork' "$CONFIG_JSON" | awk -F'/' '{print $NF}')
-REGION=$REGION
-NETWORK=$NETWORK
-SUBNET=$SUBNET
+# REGION=$REGION
+# NETWORK=$NETWORK
+# SUBNET=$SUBNET
 # Assuming tags are listed under properties.tags.items in the JSON
-TAGS=$TAGS
+# TAGS=$TAGS
 
-echo "$REGION"
-echo "$NETWORK"
-echo "$SUBNET"
-echo "$TAGS"g
-#echo $DISK_INTF_TYPE
+# echo "$REGION"
+# echo "$NETWORK"
+# echo "$SUBNET"
+# echo "$TAGS"g
+# #echo $DISK_INTF_TYPE
 
 
 # Extract the startup script from the JSON and save it to a file
@@ -59,8 +59,8 @@ EOF
 
 
 # Service account and scopes
-SERVICE_ACCOUNT_EMAIL=$SERVICE_ACCOUNT_EMAIL
-SCOPES=$SCOPES
+# SERVICE_ACCOUNT_EMAIL=$SERVICE_ACCOUNT_EMAIL
+# SCOPES=$SCOPES
 NEW_INSTANCE_TEMPALTE="webapp-template-$(date +%Y%m%d%H%M%S)"
 # Constructing the gcloud command
 GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
