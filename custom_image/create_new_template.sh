@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 # Path to the existing template JSON configuration
 #CONFIG_JSON="existing_template_config.json"
 
@@ -92,17 +92,17 @@ echo "New template created: $NEW_INSTANCE_TEMPALTE"
 NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/$GCP_PROJECT_ID/regions/$REGION/instanceTemplates/$NEW_INSTANCE_TEMPALTE"
 echo "NEW_INSTANCE_TEMPLATE_URL $NEW_INSTANCE_TEMPLATE_URL"
 
-TEMPLATE_READY="false"
-while [[ $TEMPLATE_READY == "false" ]]; do
-  output=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPLATE_URL --format="get(name)" 2>&1)
-    if [[ $output != *"ERROR"* ]]; then
-    echo "Instance template is ready: $output"
-    TEMPLATE_READY="true"
-  else
-    echo "Waiting for instance template to be ready..."
-    sleep 10
-  fi
-done
+# TEMPLATE_READY="false"
+# while [[ $TEMPLATE_READY == "false" ]]; do
+#   output=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPLATE_URL --format="get(name)" 2>&1)
+#     if [[ $output != *"ERROR"* ]]; then
+#     echo "Instance template is ready: $output"
+#     TEMPLATE_READY="true"
+#   else
+#     echo "Waiting for instance template to be ready..."
+#     sleep 10
+#   fi
+# done
 
 # Update the managed instance group to use the new template
 gcloud compute instance-groups managed set-instance-template $INSTANCE_GROUP_NAME \
