@@ -88,22 +88,14 @@ eval $GCLOUD_CMD
 
 echo "New template created: $NEW_INSTANCE_TEMPALTE"
 
-# Construct the new instance template URL
-NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/$GCP_PROJECT_ID/regions/$REGION/instanceTemplates/$NEW_INSTANCE_TEMPALTE"
-echo "NEW_INSTANCE_TEMPLATE_URL $NEW_INSTANCE_TEMPLATE_URL"
+# # Construct the new instance template URL
+# NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/$GCP_PROJECT_ID/regions/$REGION/instanceTemplates/$NEW_INSTANCE_TEMPALTE"
+# echo "NEW_INSTANCE_TEMPLATE_URL $NEW_INSTANCE_TEMPLATE_URL"
 
-# TEMPLATE_READY="false"
-# while [[ $TEMPLATE_READY == "false" ]]; do
-#   output=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPLATE_URL --format="get(name)" 2>&1)
-#     if [[ $output != *"ERROR"* ]]; then
-#     echo "Instance template is ready: $output"
-#     TEMPLATE_READY="true"
-#   else
-#     echo "Waiting for instance template to be ready..."
-#     sleep 10
-#   fi
-# done
-
+NEW_INSTANCE_TEMPLATE_URL=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPALTE \
+  --region=$REGION \
+  --format=value(self_link))
+  
 # Update the managed instance group to use the new template
 gcloud compute instance-groups managed set-instance-template $INSTANCE_GROUP_NAME \
   --template=$NEW_INSTANCE_TEMPLATE_URL \
