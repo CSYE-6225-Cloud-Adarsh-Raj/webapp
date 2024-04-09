@@ -67,7 +67,7 @@ GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
     --machine-type=$MACHINE_TYPE \
     --image=$NEW_IMAGE \
     --image-project=$GCP_PROJECT_ID \
-    --boot-disk-size=$DISK_SIZE_GBGB \
+    --boot-disk-size=${DISK_SIZE_GB}GB \
     --boot-disk-type=$DISK_TYPE \
     --network-interface=network=$NETWORK,subnet=$SUBNET \
     --instance-template-region=$REGION \
