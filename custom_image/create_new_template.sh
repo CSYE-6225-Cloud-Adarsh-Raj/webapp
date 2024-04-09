@@ -25,7 +25,7 @@ TAGS=$TAGS
 echo "$REGION"
 echo "$NETWORK"
 echo "$SUBNET"
-echo "$TAGS"
+echo "$TAGS"g
 #echo $DISK_INTF_TYPE
 
 
@@ -79,7 +79,7 @@ GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
 
 echo "$GCLOUD_CMD"
 # Execute the constructed gcloud command
-eval "$GCLOUD_CMD"
+eval $GCLOUD_CMD
 
 echo "New template created: $NEW_INSTANCE_TEMPALTE"
 
