@@ -197,7 +197,7 @@ jobs:
         
     - name: Poll for the update operation status
       run: |
-        if gcloud compute instance-groups managed wait-until --stable --region=${{ secrets.REGION }} ${{ secrets.INSTANCE_GROUP_NAME }}; then
+        if gcloud compute instance-groups managed wait-until --version-target-reached --region=${{ secrets.REGION }} ${{ secrets.INSTANCE_GROUP_NAME }}; then
           echo "Version target reached successfully."
         else
           echo "Failed to reach version target within the timeout period."
