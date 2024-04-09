@@ -41,7 +41,7 @@ jobs:
         path: ./webapp/webapp
 
   build-packer-image:
-    environment: Deploy
+    # environment: Deploy
     needs: build-and-upload-binary
     runs-on: ubuntu-latest
     steps:
@@ -182,22 +182,22 @@ jobs:
       working-directory: ./custom_image
       env: 
         PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-      #   PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-      #   GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-      #   INSTANCE_GROUP_NAME: ${{ vars.INSTANCE_GROUP_NAME }}
-      #   MACHINE_TYPE: ${{ vars.MACHINE_TYPE }}
-      #   DISK_SIZE_GB:  ${{ vars.DISK_SIZE_GB }}
-      #   DISK_TYPE:  ${{ vars.DISK_TYPE }}
-      #   REGION:  ${{ vars.REGION }}
-      #   NETWORK:  ${{ vars.NETWORK }}
-      #   SUBNET:  ${{ vars.SUBNET }}
-      #   TAGS:  ${{ vars.TAGS }}
-      #   SERVICE_ACCOUNT_EMAIL:  ${{ vars.SERVICE_ACCOUNT_EMAIL }}
-      #   SCOPES:  ${{ vars.SCOPES }}
+        # PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
+        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        INSTANCE_GROUP_NAME: ${{ secrets.INSTANCE_GROUP_NAME }}
+        MACHINE_TYPE: ${{ secrets.MACHINE_TYPE }}
+        DISK_SIZE_GB:  ${{ secrets.DISK_SIZE_GB }}
+        DISK_TYPE:  ${{ secrets.DISK_TYPE }}
+        REGION:  ${{ secrets.REGION }}
+        NETWORK:  ${{ secrets.NETWORK }}
+        SUBNET:  ${{ secrets.SUBNET }}
+        TAGS:  ${{ secrets.TAGS }}
+        SERVICE_ACCOUNT_EMAIL:  ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+        SCOPES:  ${{ secrets.SCOPES }}
         
     - name: Poll for the update operation status
       run: |
-        if gcloud compute instance-groups managed wait-until --stable --region=${{ vars.REGION }} ${{ vars.INSTANCE_GROUP_NAME }}; then
+        if gcloud compute instance-groups managed wait-until --stable --region=${{ secrets.REGION }} ${{ secrets.INSTANCE_GROUP_NAME }}; then
           echo "Version target reached successfully."
         else
           echo "Failed to reach version target within the timeout period."
