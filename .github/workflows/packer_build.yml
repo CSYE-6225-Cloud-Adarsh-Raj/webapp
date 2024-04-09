@@ -181,7 +181,7 @@ jobs:
       working-directory: ./custom_image
       env: 
         # PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-        PACKER_IMAGE_NAME: $PACKER_IMAGE_NAME
+        PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
         # GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
         # REGION: ${{ env.REGION }}
         # INSTANCE_GROUP_NAME: ${{ env.INSTANCE_GROUP_NAME }}
