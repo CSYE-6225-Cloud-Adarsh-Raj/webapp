@@ -59,8 +59,8 @@ EOF
 
 
 # Service account and scopes
-SERVICE_ACCOUNT_EMAIL="${{ vars.SERVICE_ACCOUNT_EMAIL }}"
-SCOPES="${{ vars.SCOPES }}"
+SERVICE_ACCOUNT_EMAIL="$SERVICE_ACCOUNT_EMAIL"
+SCOPES="$SCOPES"
 NEW_INSTANCE_TEMPALTE="webapp-template-$(date +%Y%m%d%H%M%S)"
 # Constructing the gcloud command
 GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
