@@ -11,6 +11,7 @@ on:
 
     
 jobs:
+  environment: Deploy
   build-and-upload-binary:
     # if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
@@ -43,7 +44,6 @@ jobs:
   build-packer-image:
     needs: build-and-upload-binary
     runs-on: ubuntu-latest
-    # environment: Deploy
     steps:
     - name: Checkout code again
       uses: actions/checkout@v4
@@ -141,6 +141,7 @@ jobs:
           exit 1
         fi
         echo "PACKER_IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
         echo "::set-output name=PACKER_IMAGE_NAME::$IMAGE_NAME"
       working-directory: ./custom_image
     
@@ -180,19 +181,19 @@ jobs:
         # echo "::set-output name=new_template_name::$OUTPUT_TEMP"
       working-directory: ./custom_image
       env: 
-        # PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
         PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-        GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-        INSTANCE_GROUP_NAME: ${{ vars.INSTANCE_GROUP_NAME }}
-        MACHINE_TYPE: ${{ vars.MACHINE_TYPE }}
-        DISK_SIZE_GB:  ${{ vars.DISK_SIZE_GB }}
-        DISK_TYPE:  ${{ vars.DISK_TYPE }}
-        REGION:  ${{ vars.REGION }}
-        NETWORK:  ${{ vars.NETWORK }}
-        SUBNET:  ${{ vars.SUBNET }}
-        TAGS:  ${{ vars.TAGS }}
-        SERVICE_ACCOUNT_EMAIL:  ${{ vars.SERVICE_ACCOUNT_EMAIL }}
-        SCOPES:  ${{ vars.SCOPES }}
+      #   PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
+      #   GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      #   INSTANCE_GROUP_NAME: ${{ vars.INSTANCE_GROUP_NAME }}
+      #   MACHINE_TYPE: ${{ vars.MACHINE_TYPE }}
+      #   DISK_SIZE_GB:  ${{ vars.DISK_SIZE_GB }}
+      #   DISK_TYPE:  ${{ vars.DISK_TYPE }}
+      #   REGION:  ${{ vars.REGION }}
+      #   NETWORK:  ${{ vars.NETWORK }}
+      #   SUBNET:  ${{ vars.SUBNET }}
+      #   TAGS:  ${{ vars.TAGS }}
+      #   SERVICE_ACCOUNT_EMAIL:  ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+      #   SCOPES:  ${{ vars.SCOPES }}
         
     - name: Poll for the update operation status
       run: |
