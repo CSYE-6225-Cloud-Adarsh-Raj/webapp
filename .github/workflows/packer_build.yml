@@ -43,7 +43,7 @@ jobs:
   build-packer-image:
     needs: build-and-upload-binary
     runs-on: ubuntu-latest
-    environment: Deploy
+    # environment: Deploy
     steps:
     - name: Checkout code again
       uses: actions/checkout@v4
@@ -182,10 +182,18 @@ jobs:
       env: 
         # PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
         PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-        # GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
-        # REGION: ${{ env.REGION }}
-        # INSTANCE_GROUP_NAME: ${{ env.INSTANCE_GROUP_NAME }}
-
+        GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
+        INSTANCE_GROUP_NAME: ${{ env.INSTANCE_GROUP_NAME }}
+        MACHINE_TYPE: ${{ env.MACHINE_TYPE }}
+        DISK_SIZE_GB:  ${{ env.DISK_SIZE_GB }}
+        DISK_TYPE:  ${{ env.DISK_TYPE }}
+        REGION:  ${{ env.REGION }}
+        NETWORK:  ${{ env.NETWORK }}
+        SUBNET:  ${{ env.SUBNET }}
+        TAGS:  ${{ env.TAGS }}
+        SERVICE_ACCOUNT_EMAIL:  ${{ env.SERVICE_ACCOUNT_EMAIL }}
+        SCOPES:  ${{ env.SCOPES }}
+        
     - name: Poll for the update operation status
       run: |
         if gcloud compute instance-groups managed wait-until --stable --region=${{ env.REGION }} ${{ env.INSTANCE_GROUP_NAME }}; then
@@ -194,3 +202,17 @@ jobs:
           echo "Failed to reach version target within the timeout period."
           exit 1
         fi
+      env: 
+        # PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
+        PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
+        GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
+        INSTANCE_GROUP_NAME: ${{ env.INSTANCE_GROUP_NAME }}
+        MACHINE_TYPE: ${{ env.MACHINE_TYPE }}
+        DISK_SIZE_GB:  ${{ env.DISK_SIZE_GB }}
+        DISK_TYPE:  ${{ env.DISK_TYPE }}
+        REGION:  ${{ env.REGION }}
+        NETWORK:  ${{ env.NETWORK }}
+        SUBNET:  ${{ env.SUBNET }}
+        TAGS:  ${{ env.TAGS }}
+        SERVICE_ACCOUNT_EMAIL:  ${{ env.SERVICE_ACCOUNT_EMAIL }}
+        SCOPES:  ${{ env.SCOPES }}

@@ -4,9 +4,9 @@
 #CONFIG_JSON="existing_template_config.json"
 
 # Define new custom OS image (this should be set or passed into the script)
-NEW_IMAGE="${{ vars.PACKER_IMAGE_NAME }}"
-GCP_PROJECT_ID="${{ vars.GCP_PROJECT_ID }}"
-INSTANCE_GROUP_NAME="${{ vars.INSTANCE_GROUP_NAME }}"
+NEW_IMAGE="$PACKER_IMAGE_NAME"
+GCP_PROJECT_ID="$GCP_PROJECT_ID"
+INSTANCE_GROUP_NAME="$INSTANCE_GROUP_NAME"
 
 # Extracting information from the JSON file
 MACHINE_TYPE="${{ vars.MACHINE_TYPE }}"
