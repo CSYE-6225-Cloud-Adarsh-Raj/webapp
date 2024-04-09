@@ -79,13 +79,13 @@ GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
 
 echo "$GCLOUD_CMD"
 # Execute the constructed gcloud command
-#eval "$GCLOUD_CMD"
+eval "$GCLOUD_CMD"
 
 echo "New template created: $NEW_INSTANCE_TEMPALTE"
 
 # Construct the new instance template URL
-NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/${GCP_PROJECT_ID}/regions/${REGION}/instanceTemplates/${NEW_INSTANCE_TEMPALTE}"
-echo "NEW_INSTANCE_TEMPLATE_URL ${NEW_INSTANCE_TEMPLATE_URL}"
+NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/$GCP_PROJECT_ID/regions/$REGION/instanceTemplates/$NEW_INSTANCE_TEMPALTE"
+echo "NEW_INSTANCE_TEMPLATE_URL $NEW_INSTANCE_TEMPLATE_URL"
 
 TEMPLATE_READY="false"
 while [[ $TEMPLATE_READY == "false" ]]; do
