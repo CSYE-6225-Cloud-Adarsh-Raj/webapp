@@ -57,6 +57,9 @@ else
 fi
 EOF
 
+echo $REGION
+echo $SERVICE_ACCOUNT_EMAIL
+
 
 # Service account and scopes
 # SERVICE_ACCOUNT_EMAIL=$SERVICE_ACCOUNT_EMAIL

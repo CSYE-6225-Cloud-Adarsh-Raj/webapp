@@ -173,13 +173,6 @@ jobs:
       working-directory: ./custom_image
 
     - name: Execute gcloud create instance script
-      id: create_instance_template
-      run: |
-        ./create_new_template.sh
-        # OUTPUT_TEMP=$(./create_new_template.sh)
-        # echo "New template created: $OUTPUT"
-        # echo "::set-output name=new_template_name::$OUTPUT_TEMP"
-      working-directory: ./custom_image
       env: 
         PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
         GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -193,6 +186,14 @@ jobs:
         TAGS:  ${{ secrets.TAGS }}
         SERVICE_ACCOUNT_EMAIL:  ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
         SCOPES:  ${{ secrets.SCOPES }}
+      # id: create_instance_template
+      run: |
+        ./create_new_template.sh
+        # OUTPUT_TEMP=$(./create_new_template.sh)
+        # echo "New template created: $OUTPUT"
+        # echo "::set-output name=new_template_name::$OUTPUT_TEMP"
+      working-directory: ./custom_image
+      
         
     - name: Poll for the update operation status
       run: |
