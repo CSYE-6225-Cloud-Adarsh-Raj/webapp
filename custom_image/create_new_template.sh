@@ -37,9 +37,9 @@ set -e
 get_secret() {
   gcloud secrets versions access latest --secret="$1"
 }
-DB_USER=$(get_secret "db_user")
-DB_PASSWORD=$(get_secret "db_password")
-DB_NAME=$(get_secret "db_name")
+DB_USER=$(get_secret "db-user")
+DB_PASSWORD=$(get_secret "db-password")
+DB_NAME=$(get_secret "db-name")
 DB_HOST=$(get_secret "db_host")
 
 cat << 'EOF' > startup-script.sh
