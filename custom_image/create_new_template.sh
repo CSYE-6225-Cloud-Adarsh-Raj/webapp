@@ -34,18 +34,17 @@ set -e
 # echo $STARTUP_SCRIPT_VALUE
 # echo "$STARTUP_SCRIPT_VALUE" > startup-script.sh
 
-cat << 'EOF' > startup-script.sh
-#!/bin/bash
-
 get_secret() {
   gcloud secrets versions access latest --secret="$1"
 }
-if [ ! -f /etc/webapp.flag ]; then
-  DB_USER=$(get_secret "db_user")
-  DB_PASSWORD=$(get_secret "db_password")
-  DB_NAME=$(get_secret "db_name")
-  DB_HOST=$(get_secret "db_host")
+DB_USER=$(get_secret "db_user")
+DB_PASSWORD=$(get_secret "db_password")
+DB_NAME=$(get_secret "db_name")
+DB_HOST=$(get_secret "db_host")
 
+cat << 'EOF' > startup-script.sh
+#!/bin/bash
+if [ ! -f /etc/webapp.flag ]; then
   echo "DB_USER=$DB_USER" > /etc/webapp.env 
   echo "DB_PASSWORD=$DB_PASSWORD" >> /etc/webapp.env
   echo "DB_NAME=$DB_NAME" >> /etc/webapp.env 
@@ -56,9 +55,6 @@ else
   echo "/etc/webapp.flag exists, skipping script execution." 
 fi
 EOF
-
-echo $REGION
-echo $SERVICE_ACCOUNT_EMAIL
 
 
 # Service account and scopes
