@@ -10,7 +10,12 @@ DB_NAME=$(get_secret "db-name")
 DB_HOST=$(get_secret "db-host")
 BOOT_DISK_KMS_KEY=$(get_secret "vm-key")
 
-cat << 'EOF' > startup-script.sh
+echo "$DB_PASSWORD"
+echo "$DB_NAME"
+echo "$DB_HOST"
+echo "$DB_USER"
+
+cat << EOF > startup-script.sh
 #!/bin/bash
 if [ ! -f /etc/webapp.flag ]; then
   echo "DB_USER=$DB_USER" > /etc/webapp.env 
