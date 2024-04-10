@@ -7,7 +7,7 @@ get_secret() {
 DB_USER=$(get_secret "db-user")
 DB_PASSWORD=$(get_secret "db-password")
 DB_NAME=$(get_secret "db-name")
-DB_HOST=$(get_secret "db_host")
+DB_HOST=$(get_secret "db-host")
 
 cat << 'EOF' > startup-script.sh
 #!/bin/bash
