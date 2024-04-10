@@ -6,6 +6,9 @@ on:
     branches: [ "main" ]
     types:
       - completed
+  # pull_request:
+  #   branches: [ "main" ]
+
     
 jobs:
   build-and-upload-binary:
@@ -100,7 +103,7 @@ jobs:
     #   working-directory: ./custom_image
     #   env:
     #     BINARY_PATH: ../artifact/webapp
-
+    #uncomment later
     - name: Create dummy packer output file
       run: |
         touch ./packer_output.txt
@@ -129,7 +132,6 @@ jobs:
       run: |
         ls -alrt
         pwd
-        # IMAGE_NAME=$(grep -o 'webapp-golden-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+-[0-9]\+--image' packer_output.txt)
         IMAGE_NAME=$(grep -Eo 'webapp-golden-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}--image' packer_output.txt)
         if [ -z "$IMAGE_NAME" ]; then
           echo "Failed to extract image name from Packer output."
@@ -139,25 +141,25 @@ jobs:
         echo "::set-output name=PACKER_IMAGE_NAME::$IMAGE_NAME"
       working-directory: ./custom_image
     
-    - name: Describe the managed instance group
-      id: describe_instance_group
-      run: |
-        OUTPUT=$(gcloud compute instance-groups managed describe $INSTANCE_GROUP_NAME --region $REGION --format="value(versions[0].instanceTemplate)")
-        echo "Instance template URL: $OUTPUT"
-        echo "::set-output name=instance_template_url::$OUTPUT"
-      env:
-        # GCP_PROJECT: csye6225-dev-414220
-        REGION: us-east1
-        INSTANCE_GROUP_NAME: webapp-group
+    # - name: Describe the managed instance group
+    #   id: describe_instance_group
+    #   run: |
+    #     OUTPUT=$(gcloud compute instance-groups managed describe $INSTANCE_GROUP_NAME --region $REGION --format="value(versions[0].instanceTemplate)")
+    #     echo "Instance template URL: $OUTPUT"
+    #     echo "::set-output name=instance_template_url::$OUTPUT"
+    #   env:
+    #     # GCP_PROJECT: csye6225-dev-414220
+    #     REGION: us-east1
+    #     INSTANCE_GROUP_NAME: webapp-group
 
-    - name: Describe the instance template
-      run: |
-        INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
-        gcloud compute instance-templates describe $INSTANCE_TEMPLATE_URL --format=json > existing_template_config.json
-        # ls -alrt
-        # pwd
-        chmod +x existing_template_config.json
-      working-directory: ./custom_image
+    # - name: Describe the instance template
+    #   run: |
+    #     INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.instance_template_url }}"
+    #     gcloud compute instance-templates describe $INSTANCE_TEMPLATE_URL --format=json > existing_template_config.json
+    #     # ls -alrt
+    #     # pwd
+    #     chmod +x existing_template_config.json
+    #   working-directory: ./custom_image
 
     - name: Set executable permission for create template script
       run: |
@@ -167,89 +169,31 @@ jobs:
       working-directory: ./custom_image
 
     - name: Execute gcloud create instance script
-      id: create_instance_template
-      run: |
-        # ls -alrt
-        # pwd
-        ./create_new_template.sh
-        # OUTPUT_TEMP=$(./create_new_template.sh)
-        # echo "New template created: $OUTPUT"
-        # echo "::set-output name=new_template_name::$OUTPUT_TEMP"
-      working-directory: ./custom_image
-      env:
+      env: 
         PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-
-    # - name: Create a new instance template with the updated image
-    #   env:
-    #       INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
-    #       REGION: ${{ secrets.REGION }}
-    #       # PACKER_IMAGE_NAME: ${{ secrets.CUSTOM_IMAGE_NAME }}
-    #       PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-    #       EXISTING_TEMPLATE_NAME: ${{ secrets.OLD_TEMPLATE_NAME}}
-    #   run: |
-    #     NEW_TEMPLATE_NAME="webapp-template-$(date +%Y%m%d%H%M%S)"
-    #     echo "Creating new instance template: $NEW_TEMPLATE_NAME"
-    #     gcloud compute instance-templates create ${NEW_TEMPLATE_NAME} \
-    #       --region=${REGION} \
-    #       --source-instance-template=${EXISTING_TEMPLATE_NAME} \
-    #       --image=${PACKER_IMAGE_NAME}
-
-    # - name: Describe the managed instance group with new instance template
-    #   id: describe_instance_template
-    #   run: |
-    #     OUTPUT_TEMP=$(gcloud compute instance-groups managed describe $INSTANCE_GROUP_NAME --region $REGION --format="value(versions[0].instanceTemplate)")
-    #     echo "NEW Instance template URL: $OUTPUT_TEMP"
-    #     echo "::set-output name=instance_template_url::$OUTPUT_TEMP"
-    #   env:
-    #     # GCP_PROJECT: csye6225-dev-414220
-    #     REGION: us-east1
-    #     INSTANCE_GROUP_NAME: webapp-group
-
-    # - name: Update the managed instance group to use the new template
-    #   env:
-    #     INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
-    #     REGION: ${{ secrets.REGION }}
-    #     #GCP_PROJECT: csye6225-dev-414220
-    #   run: |
-    #     # NEW_INSTANCE_TEMPLATE_URL="${{ steps.create_instance_template.outputs.new_template_name }}"
-    #     # NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${{ steps.create_instance_template.outputs.new_template_name }}"
-    #     # "${{ steps.describe_instance_group.outputs.instance_template_url }}"
-    #     # echo "NEW instance URL: $NEW_IN"
-
-    #     NEW_INSTANCE_TEMPLATE_NAME="${{ steps.create_instance_template.outputs.new_template_name }}"
-    #     echo "Template name: $NEW_INSTANCE_TEMPLATE_NAME"
-    #     echo "Region: $REGION"
-    #     NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${NEW_INSTANCE_TEMPLATE_NAME}"
+        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        INSTANCE_GROUP_NAME: ${{ secrets.INSTANCE_GROUP_NAME }}
+        MACHINE_TYPE: ${{ secrets.MACHINE_TYPE }}
+        DISK_SIZE_GB:  ${{ secrets.DISK_SIZE_GB }}
+        DISK_TYPE:  ${{ secrets.DISK_TYPE }}
+        REGION:  ${{ secrets.REGION }}
+        NETWORK:  ${{ secrets.NETWORK }}
+        SUBNET:  ${{ secrets.SUBNET }}
+        TAGS:  ${{ secrets.TAGS }}
+        SERVICE_ACCOUNT_EMAIL:  ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+        SCOPES:  ${{ secrets.SCOPES }}
+      run: |
+        ./create_new_template.sh
+      working-directory: ./custom_image
+      
         
-    #     echo "New instance template URL: $NEW_INSTANCE_TEMPLATE_URL"
-        
-    #     gcloud compute instance-groups managed set-instance-template ${INSTANCE_GROUP_NAME} \
-    #       --template=${NEW_INSTANCE_TEMPLATE_URL} \
-    #       --region=${REGION}
-
-    # - name: Recreate instances in the managed instance group
-    #   env:
-    #       INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
-    #       REGION: ${{ secrets.REGION }}
-    #   run: |
-    #     # NEW_INSTANCE_TEMPLATE_URL="${{ steps.describe_instance_group.outputs.new_template_name }}"
-    #     NEW_INSTANCE_TEMPLATE_NAME="${{ steps.create_instance_template.outputs.new_template_name }}"
-    #     NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/csye6225-dev-414220/regions/us-east1/instanceTemplates/${NEW_INSTANCE_TEMPLATE_NAME}"
-        
-    #     echo "New instance template URL: $NEW_INSTANCE_TEMPLATE_URL"
-
-    #     gcloud compute instance-groups managed rolling-action start-update ${INSTANCE_GROUP_NAME} \
-    #       --version template=${NEW_INSTANCE_TEMPLATE_URL} \
-    #       --region=${REGION} \
-    #       --type=proactive
-
     - name: Poll for the update operation status
       run: |
-        STATUS="RUNNING"
-        while [ "$STATUS" = "RUNNING" ]; do
-          STATUS=$(gcloud compute operations list --filter="operationType=update AND targetLink:${INSTANCE_GROUP_NAME} AND status=RUNNING" --format="value(status)" --limit=1)
-          echo "Current status: $STATUS"
-          sleep 10
-        done
-      env:
-        INSTANCE_GROUP_NAME: ${{ secrets.DEFAULT_INSTANCE_GROUP_NAME }}
+        if gcloud compute instance-groups managed wait-until --version-target-reached --region=${{ secrets.REGION }} ${{ secrets.INSTANCE_GROUP_NAME }}; then
+          echo "Version target reached successfully."
+        else
+          echo "Failed to reach version target within the timeout period."
+          exit 1
+        fi
+
+        
