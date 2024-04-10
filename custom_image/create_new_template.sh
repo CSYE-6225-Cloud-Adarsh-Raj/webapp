@@ -8,6 +8,7 @@ DB_USER=$(get_secret "db-user")
 DB_PASSWORD=$(get_secret "db-password")
 DB_NAME=$(get_secret "db-name")
 DB_HOST=$(get_secret "db-host")
+BOOT_DISK_KMS_KEY=$(get_secret "vm-key")
 
 cat << 'EOF' > startup-script.sh
 #!/bin/bash
@@ -39,7 +40,7 @@ GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
     --metadata-from-file=startup-script=startup-script.sh \
     --service-account=$SERVICE_ACCOUNT_EMAIL \
     --project=$GCP_PROJECT_ID \
-    --boot-disk-kms-key= ${gcloud secrets versions access latest --secret="vm-key"} \
+    --boot-disk-kms-key= $BOOT_DISK_KMS_KEY \
     --scopes=$SCOPES"
 
 echo "$GCLOUD_CMD"
