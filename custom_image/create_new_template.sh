@@ -54,10 +54,9 @@ eval $GCLOUD_CMD
 
 echo "New template created: $NEW_INSTANCE_TEMPALTE"
 
-NEW_INSTANCE_TEMPLATE_URL=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPALTE \
---region=$REGION \
---format="value(self_link)")
-  
+NEW_INSTANCE_TEMPLATE_URL=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPALTE --region=$REGION --format="value(self_link)")
+
+echo "Template URL: $NEW_INSTANCE_TEMPLATE_URL"
 # Update the managed instance group to use the new template
 gcloud compute instance-groups managed set-instance-template $INSTANCE_GROUP_NAME \
   --template=$NEW_INSTANCE_TEMPLATE_URL \
