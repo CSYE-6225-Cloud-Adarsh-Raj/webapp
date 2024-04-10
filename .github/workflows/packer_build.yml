@@ -1,18 +1,18 @@
 name: Packer Build
 
 on:
-  # workflow_run:
-  #   workflows: ["Go Test"]
-  #   branches: [ "main" ]
-  #   types:
-  #     - completed
-  pull_request:
+  workflow_run:
+    workflows: ["Go Test"]
     branches: [ "main" ]
+    types:
+      - completed
+  # pull_request:
+  #   branches: [ "main" ]
 
     
 jobs:
   build-and-upload-binary:
-    # if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
+    if: github.repository == 'CSYE-6225-Cloud-Adarsh-Raj/webapp' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -41,7 +41,6 @@ jobs:
         path: ./webapp/webapp
 
   build-packer-image:
-    # environment: Deploy
     needs: build-and-upload-binary
     runs-on: ubuntu-latest
     steps:
@@ -69,24 +68,24 @@ jobs:
     - name: Use gcloud CLI
       run: gcloud info
 
-    # - name: Install Packer
-    #   run: |
-    #     curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
-    #     unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
-    #     sudo rm -f /usr/local/bin/packer
-    #     sudo mv /tmp/packer /usr/local/bin
-    # - name: Debug current working directory packer build
-    #   run: |
-    #     pwd
-    #     ls -la
-    # - name: List contents of the custom_image directory
-    #   run: ls -la
-    #   working-directory: ./custom_image
+    - name: Install Packer
+      run: |
+        curl -O https://releases.hashicorp.com/packer/1.7.4/packer_1.7.4_linux_amd64.zip
+        unzip -o packer_1.7.4_linux_amd64.zip -d /tmp
+        sudo rm -f /usr/local/bin/packer
+        sudo mv /tmp/packer /usr/local/bin
+    - name: Debug current working directory packer build
+      run: |
+        pwd
+        ls -la
+    - name: List contents of the custom_image directory
+      run: ls -la
+      working-directory: ./custom_image
 
-    # - name: Packer init
-    #   run: |
-    #     packer init webapp_image.pkr.hcl
-    #   working-directory: ./custom_image
+    - name: Packer init
+      run: |
+        packer init webapp_image.pkr.hcl
+      working-directory: ./custom_image
 
 
     # - name: Run Packer to build the image
@@ -105,29 +104,29 @@ jobs:
     #   env:
     #     BINARY_PATH: ../artifact/webapp
     #uncomment later
-    # - name: Create dummy packer output file
-    #   run: |
-    #     touch ./packer_output.txt
-    #   working-directory: ./custom_image
+    - name: Create dummy packer output file
+      run: |
+        touch ./packer_output.txt
+      working-directory: ./custom_image
 
-    # - name: Debug current working directory 1
-    #   run: |
-    #     pwd
+    - name: Debug current working directory 1
+      run: |
+        pwd
 
-    # - name: Run Packer to build the image
-    #   run: |
-    #     packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | tee packer_output.txt
-    #   working-directory: ./custom_image
-    #   env:
-    #     BINARY_PATH: ../artifact/webapp
+    - name: Run Packer to build the image
+      run: |
+        packer build -var "binary_path=${BINARY_PATH}" webapp_image.pkr.hcl | tee packer_output.txt
+      working-directory: ./custom_image
+      env:
+        BINARY_PATH: ../artifact/webapp
     
-    # - name: Debug current working directory 2
-    #   run: |
-    #     pwd
+    - name: Debug current working directory 2
+      run: |
+        pwd
 
-    # - name: Display packer_output.txt content
-    #   run: cat packer_output.txt
-    #   working-directory: ./custom_image
+    - name: Display packer_output.txt content
+      run: cat packer_output.txt
+      working-directory: ./custom_image
       
     - name: Extract image name
       run: |
@@ -186,12 +185,8 @@ jobs:
         TAGS:  ${{ secrets.TAGS }}
         SERVICE_ACCOUNT_EMAIL:  ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
         SCOPES:  ${{ secrets.SCOPES }}
-      # id: create_instance_template
       run: |
         ./create_new_template.sh
-        # OUTPUT_TEMP=$(./create_new_template.sh)
-        # echo "New template created: $OUTPUT"
-        # echo "::set-output name=new_template_name::$OUTPUT_TEMP"
       working-directory: ./custom_image
       
         
@@ -203,18 +198,5 @@ jobs:
           echo "Failed to reach version target within the timeout period."
           exit 1
         fi
-      # env: 
-      #   # PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-      #   PACKER_IMAGE_NAME: ${{ env.PACKER_IMAGE_NAME }}
-      #   GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-      #   INSTANCE_GROUP_NAME: ${{ vars.INSTANCE_GROUP_NAME }}
-      #   MACHINE_TYPE: ${{ vars.MACHINE_TYPE }}
-      #   DISK_SIZE_GB:  ${{ vars.DISK_SIZE_GB }}
-      #   DISK_TYPE:  ${{ vars.DISK_TYPE }}
-      #   REGION:  ${{ vars.REGION }}
-      #   NETWORK:  ${{ vars.NETWORK }}
-      #   SUBNET:  ${{ vars.SUBNET }}
-      #   TAGS:  ${{ vars.TAGS }}
-      #   SERVICE_ACCOUNT_EMAIL:  ${{ vars.SERVICE_ACCOUNT_EMAIL }}
-      #   SCOPES:  ${{ vars.SCOPES }}
+
         

@@ -1,38 +1,5 @@
 #!/bin/bash
 set -e
-# Path to the existing template JSON configuration
-#CONFIG_JSON="existing_template_config.json"
-
-# Define new custom OS image (this should be set or passed into the script)
-# NEW_IMAGE=$PACKER_IMAGE_NAME
-# GCP_PROJECT_ID=${{ vars.GCP_PROJECT_ID }}
-# INSTANCE_GROUP_NAME=$INSTANCE_GROUP_NAME
-
-# Extracting information from the JSON file
-# MACHINE_TYPE=$MACHINE_TYPE
-# DISK_SIZE_GB=$DISK_SIZE_GB
-# DISK_TYPE=$DISK_TYPE
-#DISK_INTF_TYPE=$(jq -r '.properties.disks[0].interface' "$CONFIG_JSON")
-
-#NETWORK=$(jq -r '.properties.networkInterfaces[0].network' "$CONFIG_JSON" | awk -F'/' '{print $NF}')
-#SUBNET=$(jq -r '.properties.networkInterfaces[0].subnetwork' "$CONFIG_JSON" | awk -F'/' '{print $NF}')
-# REGION=$REGION
-# NETWORK=$NETWORK
-# SUBNET=$SUBNET
-# Assuming tags are listed under properties.tags.items in the JSON
-# TAGS=$TAGS
-
-# echo "$REGION"
-# echo "$NETWORK"
-# echo "$SUBNET"
-# echo "$TAGS"g
-# #echo $DISK_INTF_TYPE
-
-
-# Extract the startup script from the JSON and save it to a file
-# STARTUP_SCRIPT_VALUE=$(jq -r '.properties.metadata.items[] | select(.key=="startup-script") | .value' "$CONFIG_JSON")
-# echo $STARTUP_SCRIPT_VALUE
-# echo "$STARTUP_SCRIPT_VALUE" > startup-script.sh
 
 get_secret() {
   gcloud secrets versions access latest --secret="$1"
@@ -56,10 +23,6 @@ else
 fi
 EOF
 
-
-# Service account and scopes
-# SERVICE_ACCOUNT_EMAIL=$SERVICE_ACCOUNT_EMAIL
-# SCOPES=$SCOPES
 NEW_INSTANCE_TEMPALTE="webapp-template-$(date +%Y%m%d%H%M%S)"
 # Constructing the gcloud command
 GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
@@ -76,6 +39,7 @@ GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
     --metadata-from-file=startup-script=startup-script.sh \
     --service-account=$SERVICE_ACCOUNT_EMAIL \
     --project=$GCP_PROJECT_ID \
+    --boot-disk-kms-key= ${gcloud secrets versions access latest --secret="vm-key"} \
     --scopes=$SCOPES"
 
 echo "$GCLOUD_CMD"
@@ -83,10 +47,6 @@ echo "$GCLOUD_CMD"
 eval $GCLOUD_CMD
 
 echo "New template created: $NEW_INSTANCE_TEMPALTE"
-
-# # Construct the new instance template URL
-# NEW_INSTANCE_TEMPLATE_URL="https://www.googleapis.com/compute/v1/projects/$GCP_PROJECT_ID/regions/$REGION/instanceTemplates/$NEW_INSTANCE_TEMPALTE"
-# echo "NEW_INSTANCE_TEMPLATE_URL $NEW_INSTANCE_TEMPLATE_URL"
 
 NEW_INSTANCE_TEMPLATE_URL=$(gcloud compute instance-templates describe $NEW_INSTANCE_TEMPALTE \
 --region=$REGION \
@@ -97,19 +57,9 @@ gcloud compute instance-groups managed set-instance-template $INSTANCE_GROUP_NAM
   --template=$NEW_INSTANCE_TEMPLATE_URL \
   --region=$REGION
 
-# #Update the managed instance group to use the new template
-# gcloud compute instance-groups managed set-instance-template webapp-group \
-#   --template="$NEW_INSTANCE_TEMPLATE_URL" \
-#   --region=us-east1
-
 echo "Updated instance group ${INSTANCE_GROUP_NAME} to use new template: ${NEW_INSTANCE_TEMPLATE_URL}"
 
 gcloud compute instance-groups managed rolling-action start-update $INSTANCE_GROUP_NAME \
   --version=template=$NEW_INSTANCE_TEMPLATE_URL \
   --region=$REGION \
   --max-unavailable=0
-
-# gcloud compute instance-groups managed rolling-action start-update webapp-group \
-#   --version=template="$NEW_INSTANCE_TEMPLATE_URL" \
-#   --region=us-east1 \
-#   --max-unavailable=0
