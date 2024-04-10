@@ -40,7 +40,7 @@ GCLOUD_CMD="gcloud compute instance-templates create $NEW_INSTANCE_TEMPALTE \
     --metadata-from-file=startup-script=startup-script.sh \
     --service-account=$SERVICE_ACCOUNT_EMAIL \
     --project=$GCP_PROJECT_ID \
-    --boot-disk-kms-key= $BOOT_DISK_KMS_KEY \
+    --boot-disk-kms-key=$BOOT_DISK_KMS_KEY \
     --scopes=$SCOPES"
 
 echo "$GCLOUD_CMD"
