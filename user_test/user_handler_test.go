@@ -81,7 +81,7 @@ func TestCreateAndGetUser(t *testing.T) {
 		"password":   "password123",
 	}
 	userDataBytes, _ := json.Marshal(userData)
-	req, _ := http.NewRequest("POST", "/v1/user", bytes.NewBuffer(userDataBytes))
+	req, _ := http.NewRequest("POST", "/v6/user", bytes.NewBuffer(userDataBytes))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -94,7 +94,7 @@ func TestCreateAndGetUser(t *testing.T) {
 	db.Model(&user.UserModel{}).Where("username = ?", "john.doe@example.com").Update("is_verified", true)
 
 	// Test 2: Get user details with valid authentication
-	req, _ = http.NewRequest("GET", "/v1/user/self", nil)
+	req, _ = http.NewRequest("GET", "/v6/user/self", nil)
 	req.Header.Set("Authorization", "Basic "+basicAuth("john.doe@example.com", "password123"))
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -144,7 +144,7 @@ func TestUpdateAndGetUser(t *testing.T) {
 		"password":   "newpassword123",
 	}
 	updatedUserDataBytes, _ := json.Marshal(updatedUserData)
-	req, _ := http.NewRequest("PUT", "/v1/user/self", bytes.NewBuffer(updatedUserDataBytes))
+	req, _ := http.NewRequest("PUT", "/v6/user/self", bytes.NewBuffer(updatedUserDataBytes))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Basic "+basicAuth("john.update@example.com", "password@123"))
 	w := httptest.NewRecorder()
@@ -155,7 +155,7 @@ func TestUpdateAndGetUser(t *testing.T) {
 	}
 
 	// Step 3: Validate the account was updated using a GET call
-	req, _ = http.NewRequest("GET", "/v1/user/self", nil)
+	req, _ = http.NewRequest("GET", "/v6/user/self", nil)
 	req.Header.Set("Authorization", "Basic "+basicAuth("john.update@example.com", "newpassword123"))
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
