@@ -61,7 +61,7 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 
 		nonAuthEndpoints := map[string]bool{
 			"/healthz": true,
-			"/v1/user": true,
+			"/v6/user": true,
 			"/verify":  true,
 		}
 
@@ -74,8 +74,8 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 
 		allowedMethods := map[string][]string{
 			"/healthz":      {"GET"},
-			"/v1/user":      {"POST"},
-			"/v1/user/self": {"GET", "PUT"},
+			"/v6/user":      {"POST"},
+			"/v6/user/self": {"GET", "PUT"},
 			"/verify":       {"GET"},
 		}
 
@@ -99,7 +99,7 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	r.GET("/healthz", health.HealthCheckHandler(db))
 
 	//Create User
-	r.POST("/v1/user", user.CreateUserHandler(db))
+	r.POST("/v6/user", user.CreateUserHandler(db))
 
 	//Verify User
 	r.GET("/verify", user.VerifyUserHandler(db))
@@ -111,8 +111,8 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 		verifiedGroup := authGroup.Group("/")
 		verifiedGroup.Use(EmailVerificationMiddleware(db))
 		{
-			verifiedGroup.GET("/v1/user/self", user.GetUserDetails(db))
-			verifiedGroup.PUT("/v1/user/self", user.UpdateUserHandler(db))
+			verifiedGroup.GET("/v6/user/self", user.GetUserDetails(db))
+			verifiedGroup.PUT("/v6/user/self", user.UpdateUserHandler(db))
 		}
 	}
 
