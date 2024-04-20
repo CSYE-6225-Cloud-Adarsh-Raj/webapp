@@ -1,5 +1,14 @@
 # webapp
-A Golang web application to authenticate and store users with PostgresQL
+A Golang web application to authenticate users through Email and store users with PostgresQL deployed on Google Cloud Provider(GCP) using Github Actions
+
+    A golden image for the web application with its required dependencies will be be built using Packer.
+    Supporting scripts in CUSTOM_OS_IMAGE to automatically start the application with systemd
+    Github Actions contains workflows for maintaing Continuos Inegration and Continuos Delivery.
+    With the Github Continuos Deployment, the VM in the GCP is deployed with the latest packer image built on each merge commit.
+    The web application sends out email verification to authenticate users for  completing the registration process using SendGrid Email Verification service.
+    The web application is deployed to Cloud which utilises services such as VPC, Firewalls, Subnets, Routing, VPC-Peering, Google Compute Engine, Google Compute Instance Template, Google Compute Instance Group Manager, Google Cloud SQL, Google Cloud Storage, Google Cloud Function(serverless), Customer Managed Key Encryption (CMEK), Google Managed SSL certificate for HTTPS, Google Cloud Logging, Google Cloud Pub/Sub, Google Cloud Load Balancer, Autoscaler
+    The web application utilised GCP opsagent functionality for Observabiliity and Logging
+
 
 I.  Prerequisites for building and deploying your application locally:
     Download go from its official website (go version go1.21.6)
@@ -49,6 +58,70 @@ III. REST APIs endpoint:
     
     Availaible in swagger docs. Link - https://app.swaggerhub.com/apis-docs/csye6225-webapp/cloud-native-webapp/2024.spring.02
 
+IV. Useful Commands:
+    On CentOS 8
+    Download postgres 16
+    > sudo dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+    Disable old version of postgres
+    > sudo dnf -qy module disable postgresql
+
+    Install
+    > sudo dnf -y install postgresql16-server
+
+    Initialise the Database
+    > sudo /usr/pgsql-16/bin/postgresql-16-setup initdb
+
+    Enable the service
+    > sudo systemctl enable postgresql-16
+
+    Start the service
+    > sudo systemctl start postgresql-16
+
+    Verify Installation:
+    > sudo -u postgres psql -c "SELECT version();"
+
+    Setup Golang
+    > curl -LO https://golang.org/dl/go1.21.6.linux-386.tar.gz
+    > sudo tar -C /usr/local -xzf go1.21.6.linux-386.tar.gz
+    > echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile
+    > source ~/.bash_profile
+    > go version
+
+    Set ENV
+    > echo 'export DB_HOST=localhost' >> ~/.bash_profile
+    > echo 'export DB_USER=test' >> ~/.bash_profile
+    > echo 'export DB_PASSWORD=test' >> ~/.bash_profile
+    > echo 'export DB_NAME=test' >> ~/.bash_profile
+    > source ~/.bash_profile
+
+    To unzip the project
+    > Install unzip tool
+    > sudo dnf install unzip
+
+    Unzip the project
+    > unzip web-app.zip
+
+    PSQl commands:
+    > sudo -u postgres psql
+
+    Inside psql cli
+    > CREATE USER test WITH ENCRYPTED PASSWORD 'test';
+    > CREATE DATABASE test;
+    > ALTER ROLE test SUPERUSER;
+
+    DEMO commands:
+    > sudo -u postgres psql -d test
+    > SELECT * from user_models;
+    > sudo systemctl status postgresql-16
+
+
+    Commads for debugging systemctl services
+    > sudo journalctl -u myservice.service
+    > sudo setenforce 0
+
+    Terraform workspace:
+    > terraform workspace new prod
 
 GIT Workflow:
 
@@ -66,12 +139,8 @@ GIT Workflow:
         >git push fork main
 
 References:
-
-Assignemnt 1:
     
     https://medium.com/@venu-prasanna/developing-a-restful-api-with-go-gin-and-gorm-part-1-router-setup-db-configuration-a31a74ad416d
-
-Assignment 2:
 
     https://www.alexedwards.net/blog/basic-authentication-in-go
 
@@ -81,78 +150,12 @@ Assignment 2:
 
     https://www.postgresql.org/docs/
 
-Assignment 3:
     https://developer.hashicorp.com/terraform/docs
 
     https://cloud.google.com/docs
 
-Assignment 4:
     https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall
 
     https://cloud.google.com/compute/docs/instances
 
-    https://cloud.google.com/build/docs/building/build-vm-images-with-packer
-
-On CentOS 8
-Download postgres 16
-> sudo dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-
-Disable old version of postgres
-> sudo dnf -qy module disable postgresql
-
-Install
-> sudo dnf -y install postgresql16-server
-
-Initialise the Database
-> sudo /usr/pgsql-16/bin/postgresql-16-setup initdb
-
-Enable the service
-> sudo systemctl enable postgresql-16
-
-Start the service
-> sudo systemctl start postgresql-16
-
-Verify Installation:
-> sudo -u postgres psql -c "SELECT version();"
-
-Setup Golang
-> curl -LO https://golang.org/dl/go1.21.6.linux-386.tar.gz
-> sudo tar -C /usr/local -xzf go1.21.6.linux-386.tar.gz
-> echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile
-> source ~/.bash_profile
-> go version
-
-Set ENV
-> echo 'export DB_HOST=localhost' >> ~/.bash_profile
-> echo 'export DB_USER=test' >> ~/.bash_profile
-> echo 'export DB_PASSWORD=test' >> ~/.bash_profile
-> echo 'export DB_NAME=test' >> ~/.bash_profile
-> source ~/.bash_profile
-
-To unzip the project
-> Install unzip tool
-> sudo dnf install unzip
-
-Unzip the project
-> unzip web-app.zip
-
-PSQl commands:
-> sudo -u postgres psql
-
-Inside psql cli
-> CREATE USER test WITH ENCRYPTED PASSWORD 'test';
-> CREATE DATABASE test;
-> ALTER ROLE test SUPERUSER;
-
-DEMO commands:
-> sudo -u postgres psql -d test
-> SELECT * from user_models;
-> sudo systemctl status postgresql-16
-
-
-Commads for debugging systemctl services
-> sudo journalctl -u myservice.service
-> sudo setenforce 0
-
-Terraform workspace:
-> terraform workspace new prod
+    https://cloud.google.com/build/docs/building/build-vm-images-with-packer    
